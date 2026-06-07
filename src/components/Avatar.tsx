@@ -161,31 +161,45 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
           <circle cx="242" cy="224" r="3" fill="white" />
         </g>
 
-        {/* 眼线 */}
+        {/* 眼线 - 上眼睑睫毛根部 */}
         <g className="makeup-layer" style={{ opacity: effects.eyeliner ? 1 : 0 }}>
           <path
-            d="M 133 225 Q 140 232 155 235 Q 170 232 177 225"
+            d="M 135 212 Q 145 207 155 208 Q 165 207 175 212"
+            fill="none"
+            stroke="#2D1B0E"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 135 212 Q 133 213 132 215"
             fill="none"
             stroke="#2D1B0E"
             strokeWidth="3"
             strokeLinecap="round"
           />
           <path
-            d="M 177 225 Q 185 222 190 218"
+            d="M 175 212 Q 182 211 188 207 Q 192 204 195 202"
             fill="none"
             stroke="#2D1B0E"
             strokeWidth="3"
             strokeLinecap="round"
           />
           <path
-            d="M 223 225 Q 230 232 245 235 Q 260 232 267 225"
+            d="M 225 212 Q 235 207 245 208 Q 255 207 265 212"
+            fill="none"
+            stroke="#2D1B0E"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 265 212 Q 267 213 268 215"
             fill="none"
             stroke="#2D1B0E"
             strokeWidth="3"
             strokeLinecap="round"
           />
           <path
-            d="M 223 225 Q 215 222 210 218"
+            d="M 225 212 Q 218 211 212 207 Q 208 204 205 202"
             fill="none"
             stroke="#2D1B0E"
             strokeWidth="3"

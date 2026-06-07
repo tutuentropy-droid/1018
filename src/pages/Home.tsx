@@ -1,57 +1,90 @@
-import { useState, useCallback } from "react";
-import { Sparkles } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
+import { Sparkles, HelpCircle } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import StepList from "@/components/StepList";
 import TipModal from "@/components/TipModal";
 import SummaryCard from "@/components/SummaryCard";
 import Decorations from "@/components/Decorations";
 import { MAKEUP_STEPS } from "@/data/steps";
-import { CompletedEffect } from "@/types";
+import { CompletedEffect, MakeupStep } from "@/types";
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export default function Home() {
   const [started, setStarted] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [expectedStepId, setExpectedStepId] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [completedEffects, setCompletedEffects] = useState<CompletedEffect>({});
   const [showTip, setShowTip] = useState(false);
   const [currentTip, setCurrentTip] = useState("");
   const [currentTipName, setCurrentTipName] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [wrongStepId, setWrongStepId] = useState<number | null>(null);
+  const [hintsRemaining, setHintsRemaining] = useState(3);
+  const [showHint, setShowHint] = useState(false);
+
+  const shuffledSteps = useMemo<MakeupStep[]>(() => {
+    return shuffleArray(MAKEUP_STEPS);
+  }, [started]);
 
   const isComplete = completedSteps.length === MAKEUP_STEPS.length;
 
   const handleStepClick = useCallback(
     (stepId: number) => {
-      if (stepId !== currentStep || completedSteps.includes(stepId)) return;
+      if (completedSteps.includes(stepId)) return;
 
-      const step = MAKEUP_STEPS.find((s) => s.id === stepId);
-      if (!step) return;
+      if (stepId === expectedStepId) {
+        setWrongStepId(null);
+        setShowHint(false);
+        const step = MAKEUP_STEPS.find((s) => s.id === stepId);
+        if (!step) return;
 
-      setCompletedSteps((prev) => [...prev, stepId]);
-      setCompletedEffects((prev) => ({ ...prev, [step.effectKey]: true }));
-      setCurrentTip(step.tip);
-      setCurrentTipName(step.name);
-      setShowTip(true);
+        setCompletedSteps((prev) => [...prev, stepId]);
+        setCompletedEffects((prev) => ({ ...prev, [step.effectKey]: true }));
+        setCurrentTip(step.tip);
+        setCurrentTipName(step.name);
+        setShowTip(true);
 
-      if (stepId === MAKEUP_STEPS.length) {
-        setTimeout(() => setShowConfetti(true), 500);
+        if (stepId === MAKEUP_STEPS.length) {
+          setTimeout(() => setShowConfetti(true), 500);
+        }
+      } else {
+        setWrongStepId(stepId);
+        setTimeout(() => setWrongStepId(null), 600);
       }
     },
-    [currentStep, completedSteps]
+    [expectedStepId, completedSteps]
   );
 
   const handleCloseTip = useCallback(() => {
     setShowTip(false);
-    if (currentStep < MAKEUP_STEPS.length) {
-      setCurrentStep((prev) => prev + 1);
+    if (expectedStepId < MAKEUP_STEPS.length) {
+      setExpectedStepId((prev) => prev + 1);
     }
-  }, [currentStep]);
+  }, [expectedStepId]);
+
+  const handleUseHint = useCallback(() => {
+    if (hintsRemaining > 0) {
+      setHintsRemaining((prev) => prev - 1);
+      setShowHint(true);
+    }
+  }, [hintsRemaining]);
 
   const handleRestart = useCallback(() => {
-    setCurrentStep(1);
+    setExpectedStepId(1);
     setCompletedSteps([]);
     setCompletedEffects({});
     setShowConfetti(false);
+    setWrongStepId(null);
+    setHintsRemaining(3);
+    setShowHint(false);
     setStarted(true);
   }, []);
 
@@ -60,7 +93,7 @@ export default function Home() {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-pattern-dots">
         <Decorations />
 
-        <div className="relative z-10 text-center animate-fade-in-up">
+        <div className="relative z-10 text-center animate-fade-in-up max-w-xl">
           <div className="mb-8">
             <div className="inline-block p-6 rounded-full bg-gradient-to-br from-pink-200 via-lavender-100 to-peach-100 shadow-2xl mb-6">
               <span className="text-7xl block animate-float">💄</span>
@@ -73,8 +106,27 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-gray-600 text-lg mb-2">一起学习完整的日常化妆流程吧~</p>
-          <p className="text-gray-400 text-sm mb-10">点击化妆步骤，看妆容一步步变化！✨</p>
+          <p className="text-gray-600 text-lg mb-2">一起来学习正确的化妆顺序吧！</p>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            从打乱的化妆步骤中，按正确顺序依次选择下一步~
+            <br />
+            选错了会有提示，还有 3 次提示机会可以使用哦！✨
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">🎯</span>
+              <span className="text-sm text-gray-600">按正确顺序选择</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">💡</span>
+              <span className="text-sm text-gray-600">3次提示机会</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">📚</span>
+              <span className="text-sm text-gray-600">11个化妆步骤</span>
+            </div>
+          </div>
 
           <button
             onClick={() => setStarted(true)}
@@ -82,25 +134,20 @@ export default function Home() {
           >
             <span className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 group-hover:animate-spin" />
-              开始化妆
+              开始挑战
               <Sparkles className="w-6 h-6 group-hover:animate-spin" />
             </span>
           </button>
 
-          <div className="mt-12 flex flex-wrap justify-center gap-6">
-            {MAKEUP_STEPS.slice(0, 6).map((step, i) => (
-              <div
-                key={step.id}
-                className="flex flex-col items-center gap-1 opacity-70 animate-float"
-                style={{ animationDelay: `${i * 0.2}s` }}
-              >
-                <span className="text-3xl">{step.icon}</span>
-                <span className="text-xs text-gray-500">{step.name}</span>
-              </div>
-            ))}
-            <div className="flex flex-col items-center gap-1 opacity-70 animate-float" style={{ animationDelay: "1.2s" }}>
-              <span className="text-3xl">...</span>
-              <span className="text-xs text-gray-500">更多步骤</span>
+          <div className="mt-10 flex items-start justify-center gap-4 text-left bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-pink-100">
+            <HelpCircle className="w-5 h-5 text-pink-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-gray-700 mb-1">游戏玩法</p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
+                从「洁面护肤」开始，按正确的化妆顺序依次点击每一步。
+                选错了会有震动提醒，实在不知道可以使用提示功能~
+              </p>
             </div>
           </div>
         </div>
@@ -123,6 +170,8 @@ export default function Home() {
     );
   }
 
+  const currentExpectedStep = MAKEUP_STEPS.find((s) => s.id === expectedStepId);
+
   return (
     <div className="min-h-screen p-4 md:p-8 relative overflow-hidden bg-pattern-dots">
       <Decorations />
@@ -134,7 +183,14 @@ export default function Home() {
               💄 小仙女化妆课堂
             </span>
           </h1>
-          <p className="text-sm text-gray-500">按顺序点击步骤，完成精致妆容~</p>
+          <p className="text-sm text-gray-500">
+            从打乱的步骤中，找出正确的化妆顺序~
+            {currentExpectedStep && !showHint && (
+              <span className="ml-2 text-pink-400 font-medium">
+                （提示：下一步应该是第 {expectedStepId} 步）
+              </span>
+            )}
+          </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
@@ -147,16 +203,20 @@ export default function Home() {
           <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-xl border-2 border-pink-100">
               <StepList
-                steps={MAKEUP_STEPS}
-                currentStep={currentStep}
+                shuffledSteps={shuffledSteps}
+                expectedStepId={expectedStepId}
                 completedSteps={completedSteps}
+                wrongStepId={wrongStepId}
                 onStepClick={handleStepClick}
+                onUseHint={handleUseHint}
+                hintsRemaining={hintsRemaining}
+                showHint={showHint}
               />
             </div>
 
             <div className="mt-4 text-center">
               <p className="text-xs text-gray-400">
-                💡 提示：请按照顺序依次点击高亮的步骤卡片
+                🎮 从列表中选择下一步正确的化妆步骤吧！
               </p>
             </div>
           </div>
