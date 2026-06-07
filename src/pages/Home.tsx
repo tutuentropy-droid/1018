@@ -5,8 +5,9 @@ import StepList from "@/components/StepList";
 import TipModal from "@/components/TipModal";
 import SummaryCard from "@/components/SummaryCard";
 import Decorations from "@/components/Decorations";
+import ProductSelectionModal from "@/components/ProductSelectionModal";
 import { MAKEUP_STEPS } from "@/data/steps";
-import { CompletedEffect, MakeupStep } from "@/types";
+import { CompletedEffect, MakeupStep, ProductOption } from "@/types";
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -29,12 +30,29 @@ export default function Home() {
   const [wrongStepId, setWrongStepId] = useState<number | null>(null);
   const [hintsRemaining, setHintsRemaining] = useState(3);
   const [showHint, setShowHint] = useState(false);
+  const [showProductSelection, setShowProductSelection] = useState(false);
+  const [pendingStep, setPendingStep] = useState<MakeupStep | null>(null);
 
   const shuffledSteps = useMemo<MakeupStep[]>(() => {
     return shuffleArray(MAKEUP_STEPS);
   }, [started]);
 
   const isComplete = completedSteps.length === MAKEUP_STEPS.length;
+
+  const finalizeStep = useCallback((step: MakeupStep, product?: ProductOption) => {
+    setCompletedSteps((prev) => [...prev, step.id]);
+    setCompletedEffects((prev) => ({
+      ...prev,
+      [step.effectKey]: product ? product : true,
+    }));
+    setCurrentTip(step.tip);
+    setCurrentTipName(step.name);
+    setShowTip(true);
+
+    if (step.id === MAKEUP_STEPS.length) {
+      setTimeout(() => setShowConfetti(true), 500);
+    }
+  }, []);
 
   const handleStepClick = useCallback(
     (stepId: number) => {
@@ -46,21 +64,28 @@ export default function Home() {
         const step = MAKEUP_STEPS.find((s) => s.id === stepId);
         if (!step) return;
 
-        setCompletedSteps((prev) => [...prev, stepId]);
-        setCompletedEffects((prev) => ({ ...prev, [step.effectKey]: true }));
-        setCurrentTip(step.tip);
-        setCurrentTipName(step.name);
-        setShowTip(true);
-
-        if (stepId === MAKEUP_STEPS.length) {
-          setTimeout(() => setShowConfetti(true), 500);
+        if (step.products && step.products.length > 0) {
+          setPendingStep(step);
+          setShowProductSelection(true);
+        } else {
+          finalizeStep(step);
         }
       } else {
         setWrongStepId(stepId);
         setTimeout(() => setWrongStepId(null), 600);
       }
     },
-    [expectedStepId, completedSteps]
+    [expectedStepId, completedSteps, finalizeStep]
+  );
+
+  const handleProductSelect = useCallback(
+    (product: ProductOption) => {
+      if (!pendingStep) return;
+      finalizeStep(pendingStep, product);
+      setShowProductSelection(false);
+      setPendingStep(null);
+    },
+    [pendingStep, finalizeStep]
   );
 
   const handleCloseTip = useCallback(() => {
@@ -85,6 +110,8 @@ export default function Home() {
     setWrongStepId(null);
     setHintsRemaining(3);
     setShowHint(false);
+    setShowProductSelection(false);
+    setPendingStep(null);
     setStarted(true);
   }, []);
 
@@ -110,7 +137,7 @@ export default function Home() {
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
             从打乱的化妆步骤中，按正确顺序依次选择下一步~
             <br />
-            选错了会有提示，还有 3 次提示机会可以使用哦！✨
+            每一步都可以选你喜欢的产品色号，选错了会有提示，还有 3 次提示机会可以使用哦！✨
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -121,6 +148,10 @@ export default function Home() {
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">💡</span>
               <span className="text-sm text-gray-600">3次提示机会</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">🎨</span>
+              <span className="text-sm text-gray-600">挑选喜爱的产品</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">📚</span>
@@ -146,7 +177,7 @@ export default function Home() {
               <p className="text-xs text-gray-500 leading-relaxed">
                 右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
                 从「洁面护肤」开始，按正确的化妆顺序依次点击每一步。
-                选错了会有震动提醒，实在不知道可以使用提示功能~
+                每选对一步就可以挑选一款你喜欢的产品色号~选错了会有震动提醒，实在不知道可以使用提示功能！
               </p>
             </div>
           </div>
@@ -184,7 +215,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-sm text-gray-500">
-            从打乱的步骤中，找出正确的化妆顺序~
+            从打乱的步骤中，找出正确的化妆顺序，每一步都可以挑选你喜欢的产品哦~
             {currentExpectedStep && !showHint && (
               <span className="ml-2 text-pink-400 font-medium">
                 （提示：下一步应该是第 {expectedStepId} 步）
@@ -222,6 +253,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {showProductSelection && pendingStep && (
+        <ProductSelectionModal
+          step={pendingStep}
+          onSelect={handleProductSelect}
+        />
+      )}
 
       {showTip && (
         <TipModal
