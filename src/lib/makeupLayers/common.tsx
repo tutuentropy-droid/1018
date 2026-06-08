@@ -1,4 +1,4 @@
-import { CompletedEffect, ProductOption, FaceShape } from "@/types";
+import { CompletedEffect, ProductOption, FaceShape, SkinTone } from "@/types";
 import { getSkinToneColors, getFaceShapeParams } from "@/data";
 
 export interface LayerRenderContext {
@@ -24,7 +24,7 @@ export function getColorFromEffect(
     : product.color || product.previewColor || defaultColor;
 }
 
-export function getBaseSkin(skinTone: any) {
+export function getBaseSkin(skinTone: SkinTone | null | undefined) {
   return getSkinToneColors(skinTone);
 }
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { LayerRenderContext, getColorFromEffect, getFaceParams } from "./common";
-import { FaceShape } from "@/types";
 
 export function renderBlushLayer(ctx: LayerRenderContext): React.ReactNode {
   const opacity = ctx.effects.blush ? 1 : 0;

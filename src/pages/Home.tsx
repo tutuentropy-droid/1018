@@ -59,7 +59,6 @@ export default function Home() {
     setGameMode,
     finalizeStep,
     setWrongStep,
-    useHint,
     setShowHint,
     openProductSelection,
     setPendingStep,
@@ -71,7 +70,7 @@ export default function Home() {
 
   const shuffledSteps = useMemo<MakeupStep[]>(() => {
     return shuffleArray(MAKEUP_STEPS);
-  }, [started]);
+  }, []);
 
   const isComplete = completedSteps.length === MAKEUP_STEPS.length;
 
@@ -125,8 +124,8 @@ export default function Home() {
   }, [closeDrawing]);
 
   const handleUseHint = useCallback(() => {
-    useHint();
-  }, [useHint]);
+    store.useHint();
+  }, [store]);
 
   const handleRestart = useCallback(() => {
     resetGame();
