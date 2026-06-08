@@ -1,7 +1,8 @@
-import { useCallback } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { MakeupStep, ProductOption, CompletedEffect, CharacterProfile } from "@/types";
 import { useDrawingInteraction } from "@/hooks/useDrawingInteraction";
 import { getColorFromEffect, renderMakeupLayers, LayerRenderContext, getFaceParams } from "@/lib/makeupLayers";
+import { getToolIcon } from "@/components/MakeupTools";
 
 interface MakeupDrawingCanvasProps {
   step: MakeupStep;
@@ -277,20 +278,35 @@ function AvatarSVGInner({
             fill="none"
             stroke={productColor}
             strokeWidth="2"
-            opacity="0.6"
+            opacity="0.4"
+            strokeDasharray="4 3"
           />
-          <circle
-            cx={currentPos.x}
-            cy={currentPos.y}
-            r={toolSize / 2}
-            fill={productColor}
-            opacity="0.3"
-          />
+          <g transform={`translate(${currentPos.x - 20}, ${currentPos.y - 50})`}>
+            <foreignObject x="0" y="0" width="40" height="50">
+              <div style={{ width: "40px", height: "50px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {/* 工具图标跟随光标 */}
+              </div>
+            </foreignObject>
+          </g>
         </g>
       )}
     </>
   );
 }
+
+const TOOL_ANIMATION_MAP: Record<string, string> = {
+  brushLarge: "animate-brush-swing",
+  brushMedium: "animate-brush-swing",
+  brushSmall: "animate-brush-swing",
+  brushBlush: "animate-brush-swing",
+  concealerBrush: "animate-brush-swing",
+  sponge: "animate-sponge-press",
+  pencil: "animate-pencil-write",
+  eyelinerPen: "animate-pencil-write",
+  mascaraWand: "animate-mascara-wiggle",
+  lipstick: "animate-lipstick-apply",
+  skincarePad: "animate-pad-pat",
+};
 
 export default function MakeupDrawingCanvas({
   step,
@@ -302,6 +318,9 @@ export default function MakeupDrawingCanvas({
 }: MakeupDrawingCanvasProps) {
   const toolSize = step.drawingTool?.size ?? 20;
   const threshold = step.coverageThreshold ?? 70;
+  const [justPicked, setJustPicked] = useState(false);
+  const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [cursorScreenPos, setCursorScreenPos] = useState<{ x: number; y: number } | null>(null);
 
   const handleCoverageReached = useCallback(() => {
     setTimeout(() => onComplete(), 600);
@@ -322,6 +341,47 @@ export default function MakeupDrawingCanvas({
   };
 
   const productColor = getProductColor();
+
+  const toolKey = step.toolKey;
+  const toolAnimationClass = toolKey ? TOOL_ANIMATION_MAP[toolKey] || "" : "";
+
+  const handleToolPick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    setJustPicked(true);
+    const newSparkles = Array.from({ length: 6 }, (_, i) => ({
+      id: Date.now() + i,
+      x: Math.random() * 80 - 40,
+      y: Math.random() * 80 - 40,
+    }));
+    setSparkles(newSparkles);
+    setTimeout(() => setJustPicked(false), 600);
+    setTimeout(() => setSparkles([]), 800);
+    drawing.handleToolAreaMouseDown(e);
+  }, [drawing]);
+
+  const handleMouseMoveWithCursor = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+    setCursorScreenPos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    drawing.handleMouseMove(e);
+  }, [drawing]);
+
+  const handleTouchMoveWithCursor = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    const touch = e.touches[0];
+    if (touch) {
+      const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
+      setCursorScreenPos({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+      });
+    }
+    drawing.handleMouseMove(e);
+  }, [drawing]);
+
+  const handleMouseUpWithCursor = useCallback(() => {
+    drawing.handleMouseUp();
+  }, [drawing]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
@@ -359,15 +419,29 @@ export default function MakeupDrawingCanvas({
             <div className="relative select-none" style={{ touchAction: "none" }}>
               {!drawing.toolPicked && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-2xl">
-                  <div className="text-center">
+                  <div className="text-center relative">
                     <div
-                      className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-pink-200 to-rose-200 flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-transform animate-float"
-                      onMouseDown={drawing.handleToolAreaMouseDown}
-                      onTouchStart={drawing.handleToolAreaMouseDown}
+                      className={`relative w-24 h-24 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-100 flex items-center justify-center shadow-xl cursor-pointer tool-hover-scale ${justPicked ? "animate-tool-pickup" : "tool-float-glow"} border-4 border-pink-200`}
+                      onMouseDown={handleToolPick}
+                      onTouchStart={handleToolPick}
                     >
-                      <span className="text-4xl">{step.drawingTool?.icon || "🖌️"}</span>
+                      <div className={`${toolAnimationClass}`}>
+                        {getToolIcon(toolKey, 64)}
+                      </div>
                     </div>
-                    <p className="text-sm font-bold text-pink-600">
+                    {sparkles.map((s) => (
+                      <span
+                        key={s.id}
+                        className="tool-sparkle text-2xl"
+                        style={{
+                          left: `calc(50% + ${s.x}px)`,
+                          top: `calc(40% + ${s.y}px)`,
+                        }}
+                      >
+                        ✨
+                      </span>
+                    ))}
+                    <p className="text-sm font-bold text-pink-600 mt-2">
                       点击拿起 {step.drawingTool?.name || "化妆工具"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">然后在面部拖动涂抹~</p>
@@ -375,30 +449,48 @@ export default function MakeupDrawingCanvas({
                 </div>
               )}
 
-              <svg
-                ref={drawing.svgRef}
-                viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
-                className="relative w-full max-w-sm mx-auto h-auto drop-shadow-2xl"
-                xmlns="http://www.w3.org/2000/svg"
-                onMouseDown={drawing.handleMouseDown}
-                onMouseMove={drawing.handleMouseMove}
-                onMouseUp={drawing.handleMouseUp}
-                onMouseLeave={drawing.handleMouseUp}
-                onTouchStart={drawing.handleMouseDown}
-                onTouchMove={drawing.handleMouseMove}
-                onTouchEnd={drawing.handleMouseUp}
-              >
-                <AvatarSVGInner
-                  effects={effects}
-                  characterProfile={characterProfile}
-                  strokePoints={drawing.strokePoints}
-                  targetZones={step.targetZones}
-                  productColor={productColor}
-                  toolSize={toolSize}
-                  toolPicked={drawing.toolPicked}
-                  currentPos={drawing.currentPos}
-                />
-              </svg>
+              <div className="relative">
+                <svg
+                  ref={drawing.svgRef}
+                  viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
+                  className="relative w-full max-w-sm mx-auto h-auto drop-shadow-2xl"
+                  xmlns="http://www.w3.org/2000/svg"
+                  onMouseDown={drawing.handleMouseDown}
+                  onMouseMove={handleMouseMoveWithCursor}
+                  onMouseUp={handleMouseUpWithCursor}
+                  onMouseLeave={handleMouseUpWithCursor}
+                  onTouchStart={drawing.handleMouseDown}
+                  onTouchMove={handleTouchMoveWithCursor}
+                  onTouchEnd={handleMouseUpWithCursor}
+                >
+                  <AvatarSVGInner
+                    effects={effects}
+                    characterProfile={characterProfile}
+                    strokePoints={drawing.strokePoints}
+                    targetZones={step.targetZones}
+                    productColor={productColor}
+                    toolSize={toolSize}
+                    toolPicked={drawing.toolPicked}
+                    currentPos={drawing.currentPos}
+                  />
+                </svg>
+
+                {drawing.toolPicked && cursorScreenPos && (
+                  <div
+                    className="absolute pointer-events-none z-30 tool-cursor-icon"
+                    style={{
+                      left: `${cursorScreenPos.x}px`,
+                      top: `${cursorScreenPos.y - 50}px`,
+                      transform: `translateX(-50%) ${drawing.isDrawing ? "scale(0.85) rotate(-8deg)" : "scale(1)"}`,
+                      transition: "transform 0.1s ease",
+                    }}
+                  >
+                    <div className={`${toolAnimationClass}`}>
+                      {getToolIcon(toolKey, 50)}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {drawing.toolPicked && !drawing.isDrawing && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-pink-400/90 text-white text-xs rounded-full shadow-lg animate-bounce-slow">

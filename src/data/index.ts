@@ -34,6 +34,7 @@ function hydrateMakeupStep(raw: MakeupStepRaw): MakeupStep {
     description: raw.description,
     tip: raw.tip,
     effectKey: raw.effectKey,
+    toolKey: raw.toolKey,
   };
   if (raw.productKey && productsData[raw.productKey]) {
     step.products = productsData[raw.productKey];

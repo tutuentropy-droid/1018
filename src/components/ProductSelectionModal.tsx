@@ -1,11 +1,26 @@
 import { useState } from "react";
 import { MakeupStep, ProductOption } from "@/types";
 import { Check, ShoppingBag } from "lucide-react";
+import { getToolIcon } from "@/components/MakeupTools";
 
 interface ProductSelectionModalProps {
   step: MakeupStep;
   onSelect: (product: ProductOption) => void;
 }
+
+const TOOL_ANIMATION_MAP: Record<string, string> = {
+  brushLarge: "animate-brush-swing",
+  brushMedium: "animate-brush-swing",
+  brushSmall: "animate-brush-swing",
+  brushBlush: "animate-brush-swing",
+  concealerBrush: "animate-brush-swing",
+  sponge: "animate-sponge-press",
+  pencil: "animate-pencil-write",
+  eyelinerPen: "animate-pencil-write",
+  mascaraWand: "animate-mascara-wiggle",
+  lipstick: "animate-lipstick-apply",
+  skincarePad: "animate-pad-pat",
+};
 
 export default function ProductSelectionModal({
   step,
@@ -24,6 +39,10 @@ export default function ProductSelectionModal({
   if (!step.products || step.products.length === 0) {
     return null;
   }
+
+  const toolKey = step.toolKey;
+  const toolAnimationClass = toolKey ? TOOL_ANIMATION_MAP[toolKey] || "" : "";
+  const toolName = step.drawingTool?.name;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
@@ -48,6 +67,24 @@ export default function ProductSelectionModal({
           </div>
 
           <div className="p-5">
+            {toolKey && (
+              <div className="mb-4 p-3 rounded-2xl bg-gradient-to-r from-pink-50 to-lavender-50 border-2 border-pink-100 flex items-center gap-3">
+                <div className="tool-demo-container flex-shrink-0">
+                  <div className={`${toolAnimationClass}`}>
+                    {getToolIcon(toolKey, 36)}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-pink-600">
+                    接下来用「{toolName}」上妆
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {step.drawingHint || "选择产品后开始化妆吧~"}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
               {step.products.map((product) => {
                 const isSelected = selectedId === product.id;
@@ -58,7 +95,7 @@ export default function ProductSelectionModal({
                     className={`relative p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 ${
                       isSelected
                         ? "border-pink-400 bg-pink-50 shadow-lg scale-[1.03]"
-                        : "border-pink-100 bg-white hover:border-pink-200 hover:shadow-md"
+                        : "border-pink-100 bg-white hover:border-pink-200 hover:shadow-md hover:scale-[1.02]"
                     }`}
                   >
                     {isSelected && (
@@ -66,16 +103,25 @@ export default function ProductSelectionModal({
                         <Check className="w-4 h-4 text-white" strokeWidth={3} />
                       </div>
                     )}
-                    <div
-                      className="w-14 h-14 rounded-full shadow-inner border-2 border-white flex items-center justify-center"
-                      style={{
-                        background: product.color2
-                          ? `linear-gradient(135deg, ${product.color}, ${product.color2})`
-                          : product.previewColor || "#FFE4E9",
-                      }}
-                    >
-                      {product.icon && (
-                        <span className="text-2xl">{product.icon}</span>
+                    <div className="relative">
+                      <div
+                        className="w-14 h-14 rounded-full shadow-inner border-2 border-white flex items-center justify-center"
+                        style={{
+                          background: product.color2
+                            ? `linear-gradient(135deg, ${product.color}, ${product.color2})`
+                            : product.previewColor || "#FFE4E9",
+                        }}
+                      >
+                        {product.icon && (
+                          <span className="text-2xl">{product.icon}</span>
+                        )}
+                      </div>
+                      {toolKey && (
+                        <div className="absolute -bottom-1 -right-2 w-7 h-7 rounded-full bg-white border-2 border-pink-200 flex items-center justify-center shadow-sm">
+                          <div className={`${toolAnimationClass}`}>
+                            {getToolIcon(toolKey, 22)}
+                          </div>
+                        </div>
                       )}
                     </div>
                     <p

@@ -42,6 +42,7 @@ export interface MakeupStep {
   description: string;
   tip: string;
   effectKey: string;
+  toolKey?: string;
   products?: ProductOption[];
   drawingTool?: DrawingTool;
   targetZones?: TargetZone[];
