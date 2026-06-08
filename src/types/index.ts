@@ -82,3 +82,12 @@ export interface OutfitStyleOption {
   icon: string;
   description: string;
 }
+
+export type GameMode = "guided" | "free";
+
+export interface StepRecord {
+  stepId: number;
+  stepName: string;
+  product?: ProductOption;
+  completedAt: number;
+}

@@ -1,11 +1,12 @@
 import { Check } from "lucide-react";
-import { MakeupStep } from "@/types";
+import { MakeupStep, GameMode } from "@/types";
 
 interface StepCardProps {
   step: MakeupStep;
   isCompleted: boolean;
   isWrong: boolean;
   onClick: () => void;
+  gameMode: GameMode;
 }
 
 export default function StepCard({
@@ -13,9 +14,12 @@ export default function StepCard({
   isCompleted,
   isWrong,
   onClick,
+  gameMode,
 }: StepCardProps) {
+  const showWrong = gameMode === "guided" && isWrong;
+
   const getCardStyle = () => {
-    if (isWrong) {
+    if (showWrong) {
       return "bg-red-50 border-red-300 shadow-red-100 animate-shake";
     }
     if (isCompleted) {
@@ -25,7 +29,7 @@ export default function StepCard({
   };
 
   const getNumberStyle = () => {
-    if (isWrong) {
+    if (showWrong) {
       return "bg-red-200 text-red-500";
     }
     if (isCompleted) {
@@ -58,7 +62,7 @@ export default function StepCard({
             <span className="text-2xl">{step.icon}</span>
             <h3
               className={`font-bold text-base truncate ${
-                isWrong
+                showWrong
                   ? "text-red-500"
                   : isCompleted
                   ? "text-mint-300"
@@ -70,7 +74,7 @@ export default function StepCard({
           </div>
           <p
             className={`text-xs truncate ${
-              isWrong ? "text-red-400" : isCompleted ? "text-mint-300" : "text-gray-500"
+              showWrong ? "text-red-400" : isCompleted ? "text-mint-300" : "text-gray-500"
             }`}
           >
             {step.description}
@@ -82,7 +86,7 @@ export default function StepCard({
             已完成 ✓
           </div>
         )}
-        {isWrong && (
+        {showWrong && (
           <div className="flex-shrink-0 text-red-400 text-sm font-bold animate-pulse">
             顺序不对！
           </div>

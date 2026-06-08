@@ -9,7 +9,7 @@ import Decorations from "@/components/Decorations";
 import ProductSelectionModal from "@/components/ProductSelectionModal";
 import MakeupDrawingCanvas from "@/components/MakeupDrawingCanvas";
 import { MAKEUP_STEPS } from "@/data/steps";
-import { CompletedEffect, MakeupStep, ProductOption, CharacterProfile, SkinToneOption, FaceShapeOption, SceneOption, OutfitStyleOption } from "@/types";
+import { CompletedEffect, MakeupStep, ProductOption, CharacterProfile, SkinToneOption, FaceShapeOption, SceneOption, OutfitStyleOption, GameMode, StepRecord } from "@/types";
 
 const SKIN_TONE_LABELS: Record<string, SkinToneOption> = {
   fair: { id: "fair", name: "白皙肤色", color1: "#FFE8D6", color2: "#FFD9B8", icon: "🌸" },
@@ -54,8 +54,10 @@ export default function Home() {
 
   const [characterProfile] = useState<CharacterProfile | null>(initialProfile);
   const [started, setStarted] = useState(!!initialProfile);
+  const [gameMode, setGameMode] = useState<GameMode>("guided");
   const [expectedStepId, setExpectedStepId] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [stepHistory, setStepHistory] = useState<StepRecord[]>([]);
   const [completedEffects, setCompletedEffects] = useState<CompletedEffect>({});
   const [showTip, setShowTip] = useState(false);
   const [currentTip, setCurrentTip] = useState("");
@@ -82,20 +84,29 @@ export default function Home() {
       ...prev,
       [step.effectKey]: product ? product : true,
     }));
+    setStepHistory((prev) => [
+      ...prev,
+      {
+        stepId: step.id,
+        stepName: step.name,
+        product,
+        completedAt: Date.now(),
+      },
+    ]);
     setCurrentTip(step.tip);
     setCurrentTipName(step.name);
     setShowTip(true);
 
-    if (step.id === MAKEUP_STEPS.length) {
+    if (completedSteps.length + 1 === MAKEUP_STEPS.length) {
       setTimeout(() => setShowConfetti(true), 500);
     }
-  }, []);
+  }, [completedSteps.length]);
 
   const handleStepClick = useCallback(
     (stepId: number) => {
       if (completedSteps.includes(stepId)) return;
 
-      if (stepId === expectedStepId) {
+      if (gameMode === "free" || stepId === expectedStepId) {
         setWrongStepId(null);
         setShowHint(false);
         const step = MAKEUP_STEPS.find((s) => s.id === stepId);
@@ -116,7 +127,7 @@ export default function Home() {
         setTimeout(() => setWrongStepId(null), 600);
       }
     },
-    [expectedStepId, completedSteps, finalizeStep]
+    [gameMode, expectedStepId, completedSteps, finalizeStep]
   );
 
   const handleProductSelect = useCallback(
@@ -153,10 +164,10 @@ export default function Home() {
 
   const handleCloseTip = useCallback(() => {
     setShowTip(false);
-    if (expectedStepId < MAKEUP_STEPS.length) {
+    if (gameMode === "guided" && expectedStepId < MAKEUP_STEPS.length) {
       setExpectedStepId((prev) => prev + 1);
     }
-  }, [expectedStepId]);
+  }, [gameMode, expectedStepId]);
 
   const handleUseHint = useCallback(() => {
     if (hintsRemaining > 0) {
@@ -168,6 +179,7 @@ export default function Home() {
   const handleRestart = useCallback(() => {
     setExpectedStepId(1);
     setCompletedSteps([]);
+    setStepHistory([]);
     setCompletedEffects({});
     setShowConfetti(false);
     setWrongStepId(null);
@@ -179,6 +191,23 @@ export default function Home() {
     setDrawingStep(null);
     setDrawingProduct(null);
     setStarted(true);
+  }, []);
+
+  const handleModeChange = useCallback((mode: GameMode) => {
+    setGameMode(mode);
+    setExpectedStepId(1);
+    setCompletedSteps([]);
+    setStepHistory([]);
+    setCompletedEffects({});
+    setShowConfetti(false);
+    setWrongStepId(null);
+    setHintsRemaining(3);
+    setShowHint(false);
+    setShowProductSelection(false);
+    setPendingStep(null);
+    setShowDrawing(false);
+    setDrawingStep(null);
+    setDrawingProduct(null);
   }, []);
 
   const handleGoToCustomize = useCallback(() => {
@@ -217,8 +246,40 @@ export default function Home() {
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
             选择你的肤色、脸型、场景和服装，打造属于你的完美形象~
             <br />
-            之后从打乱的化妆步骤中，按正确顺序依次操作，每一步先选产品，然后用工具在脸上"画"出妆容哦！✨
+            {gameMode === "guided"
+              ? "之后从打乱的化妆步骤中，按正确顺序依次操作，每一步先选产品，然后用工具在脸上\"画\"出妆容哦！✨"
+              : "之后自由选择任意化妆步骤，随意组合妆容效果，发挥你的创意吧！🎨"}
           </p>
+
+          <div className="mb-8">
+            <p className="text-sm font-bold text-gray-600 mb-3">选择游戏模式</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setGameMode("guided")}
+                className={`flex-1 max-w-[200px] p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  gameMode === "guided"
+                    ? "bg-gradient-to-br from-pink-100 to-lavender-100 border-pink-300 shadow-lg scale-105"
+                    : "bg-white/70 border-pink-100 hover:bg-white hover:border-pink-200"
+                }`}
+              >
+                <div className="text-3xl mb-2">📖</div>
+                <div className={`font-bold ${gameMode === "guided" ? "text-pink-500" : "text-gray-700"}`}>顺序教学</div>
+                <div className="text-xs text-gray-500 mt-1">按正确步骤学习化妆</div>
+              </button>
+              <button
+                onClick={() => setGameMode("free")}
+                className={`flex-1 max-w-[200px] p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  gameMode === "free"
+                    ? "bg-gradient-to-br from-purple-100 to-pink-100 border-purple-300 shadow-lg scale-105"
+                    : "bg-white/70 border-pink-100 hover:bg-white hover:border-pink-200"
+                }`}
+              >
+                <div className="text-3xl mb-2">🎨</div>
+                <div className={`font-bold ${gameMode === "free" ? "text-purple-500" : "text-gray-700"}`}>自由创作</div>
+                <div className="text-xs text-gray-500 mt-1">随意搭配发挥创意</div>
+              </button>
+            </div>
+          </div>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
@@ -235,7 +296,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">💡</span>
-              <span className="text-sm text-gray-600">3次提示机会</span>
+              <span className="text-sm text-gray-600">{gameMode === "guided" ? "3次提示机会" : "无顺序限制"}</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">📚</span>
@@ -259,10 +320,17 @@ export default function Home() {
             <div>
               <p className="text-sm font-bold text-gray-700 mb-1">游戏玩法</p>
               <p className="text-xs text-gray-500 leading-relaxed">
-                首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
-                从「洁面护肤」开始，按正确的化妆顺序依次选择每一步。
-                选对后先挑选你喜欢的产品色号，然后拿起化妆工具在人物脸上的高亮区域"画"出妆容，
-                完成度达标才算过关哦！选错了会有震动提醒，实在不知道可以使用提示功能~
+                {gameMode === "guided" ? (
+                  <>首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
+                  从「洁面护肤」开始，按正确的化妆顺序依次选择每一步。
+                  选对后先挑选你喜欢的产品色号，然后拿起化妆工具在人物脸上的高亮区域"画"出妆容，
+                  完成度达标才算过关哦！选错了会有震动提醒，实在不知道可以使用提示功能~</>
+                ) : (
+                  <>首先定制你的专属形象，然后可以自由选择任意化妆步骤，不受顺序限制！
+                  尽情发挥创意，挑选你喜欢的产品色号，拿起化妆工具在人物脸上的高亮区域"画"出妆容，
+                  完成度达标即可。尝试夸张或混搭的妆容，打造属于你自己的独特风格~
+                  完成所有步骤后会记录你的创作顺序哦！✨</>
+                )}
               </p>
             </div>
           </div>
@@ -292,7 +360,13 @@ export default function Home() {
           <div className="w-72 md:w-80">
             <Avatar effects={completedEffects} isComplete={true} characterProfile={characterProfile ?? undefined} />
           </div>
-          <SummaryCard onRestart={handleRestart} />
+          <SummaryCard
+            onRestart={handleRestart}
+            gameMode={gameMode}
+            stepHistory={stepHistory}
+            completedEffects={completedEffects}
+            characterProfile={characterProfile ?? undefined}
+          />
         </div>
       </div>
     );
@@ -311,6 +385,30 @@ export default function Home() {
               💄 小仙女化妆课堂
             </span>
           </h1>
+
+          <div className="flex justify-center gap-2 mb-3">
+            <button
+              onClick={() => handleModeChange("guided")}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                gameMode === "guided"
+                  ? "bg-gradient-to-r from-pink-400 to-lavender-400 text-white shadow-md"
+                  : "bg-white/70 text-gray-500 hover:bg-white border border-pink-100"
+              }`}
+            >
+              📖 顺序教学
+            </button>
+            <button
+              onClick={() => handleModeChange("free")}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                gameMode === "free"
+                  ? "bg-gradient-to-r from-purple-400 to-pink-400 text-white shadow-md"
+                  : "bg-white/70 text-gray-500 hover:bg-white border border-pink-100"
+              }`}
+            >
+              🎨 自由创作
+            </button>
+          </div>
+
           {characterProfile && (
             <div className="flex flex-wrap justify-center gap-1.5 mt-2 mb-2">
               {renderProfileBadge().map((text, idx) => (
@@ -324,11 +422,22 @@ export default function Home() {
             </div>
           )}
           <p className="text-sm text-gray-500">
-            从打乱的步骤中，找出正确的化妆顺序，选品后用工具在脸上"画"出妆容~
-            {currentExpectedStep && !showHint && (
-              <span className="ml-2 text-pink-400 font-medium">
-                （提示：下一步应该是第 {expectedStepId} 步）
-              </span>
+            {gameMode === "guided" ? (
+              <>
+                从打乱的步骤中，找出正确的化妆顺序，选品后用工具在脸上"画"出妆容~
+                {currentExpectedStep && !showHint && (
+                  <span className="ml-2 text-pink-400 font-medium">
+                    （提示：下一步应该是第 {expectedStepId} 步）
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                自由选择任意步骤，发挥创意打造专属妆容~ 🎨
+                <span className="ml-2 text-purple-400 font-medium">
+                  （已完成 {completedSteps.length} / {MAKEUP_STEPS.length} 步）
+                </span>
+              </>
             )}
           </p>
         </header>
@@ -351,12 +460,15 @@ export default function Home() {
               onUseHint={handleUseHint}
               hintsRemaining={hintsRemaining}
               showHint={showHint}
+              gameMode={gameMode}
             />
           </div>
 
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-400">
-              🎮 选择正确的步骤 → 挑选产品 → 拿起工具在脸上"画"出妆容吧！
+              {gameMode === "guided"
+                ? "🎮 选择正确的步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容吧！"
+                : "🎨 任意选择步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容，自由发挥创意！"}
             </p>
           </div>
         </div>
