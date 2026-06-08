@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import { Sparkles, HelpCircle } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Sparkles, HelpCircle, User } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import StepList from "@/components/StepList";
 import TipModal from "@/components/TipModal";
@@ -7,7 +8,33 @@ import SummaryCard from "@/components/SummaryCard";
 import Decorations from "@/components/Decorations";
 import ProductSelectionModal from "@/components/ProductSelectionModal";
 import { MAKEUP_STEPS } from "@/data/steps";
-import { CompletedEffect, MakeupStep, ProductOption } from "@/types";
+import { CompletedEffect, MakeupStep, ProductOption, CharacterProfile, SkinToneOption, FaceShapeOption, SceneOption, OutfitStyleOption } from "@/types";
+
+const SKIN_TONE_LABELS: Record<string, SkinToneOption> = {
+  fair: { id: "fair", name: "白皙肤色", color1: "#FFE8D6", color2: "#FFD9B8", icon: "🌸" },
+  natural: { id: "natural", name: "自然肤色", color1: "#FFD9B8", color2: "#F5C49A", icon: "🌷" },
+  wheat: { id: "wheat", name: "小麦肤色", color1: "#E8B88F", color2: "#D4A373", icon: "🌻" },
+};
+
+const FACE_SHAPE_LABELS: Record<string, FaceShapeOption> = {
+  round: { id: "round", name: "圆脸", icon: "😊", description: "可爱圆润" },
+  oval: { id: "oval", name: "鹅蛋脸", icon: "😄", description: "标准脸型" },
+  square: { id: "square", name: "方脸", icon: "😎", description: "轮廓分明" },
+};
+
+const SCENE_LABELS: Record<string, SceneOption> = {
+  commute: { id: "commute", name: "日常通勤", icon: "🚇", description: "清新自然" },
+  date: { id: "date", name: "约会晚宴", icon: "🌹", description: "精致甜美" },
+  beach: { id: "beach", name: "海边度假", icon: "🏖️", description: "阳光元气" },
+  meeting: { id: "meeting", name: "职场会议", icon: "💼", description: "干练专业" },
+};
+
+const OUTFIT_LABELS: Record<string, OutfitStyleOption> = {
+  casual: { id: "casual", name: "休闲T恤", icon: "👕", description: "轻松随性" },
+  dress: { id: "dress", name: "优雅连衣裙", icon: "👗", description: "温柔浪漫" },
+  suit: { id: "suit", name: "职场西装", icon: "🧥", description: "利落干练" },
+  resort: { id: "resort", name: "度假长裙", icon: "🌴", description: "飘逸灵动" },
+};
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -19,7 +46,13 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function Home() {
-  const [started, setStarted] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const locationState = location.state as { characterProfile?: CharacterProfile } | null;
+  const initialProfile = locationState?.characterProfile ?? null;
+
+  const [characterProfile] = useState<CharacterProfile | null>(initialProfile);
+  const [started, setStarted] = useState(!!initialProfile);
   const [expectedStepId, setExpectedStepId] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [completedEffects, setCompletedEffects] = useState<CompletedEffect>({});
@@ -115,6 +148,20 @@ export default function Home() {
     setStarted(true);
   }, []);
 
+  const handleGoToCustomize = useCallback(() => {
+    navigate("/customize");
+  }, [navigate]);
+
+  const renderProfileBadge = () => {
+    if (!characterProfile) return null;
+    const items: string[] = [];
+    if (characterProfile.skinTone) items.push(`${SKIN_TONE_LABELS[characterProfile.skinTone].icon}${SKIN_TONE_LABELS[characterProfile.skinTone].name}`);
+    if (characterProfile.faceShape) items.push(`${FACE_SHAPE_LABELS[characterProfile.faceShape].icon}${FACE_SHAPE_LABELS[characterProfile.faceShape].name}`);
+    if (characterProfile.scene) items.push(`${SCENE_LABELS[characterProfile.scene].icon}${SCENE_LABELS[characterProfile.scene].name}`);
+    if (characterProfile.outfitStyle) items.push(`${OUTFIT_LABELS[characterProfile.outfitStyle].icon}${OUTFIT_LABELS[characterProfile.outfitStyle].name}`);
+    return items;
+  };
+
   if (!started) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-pattern-dots">
@@ -133,14 +180,18 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-gray-600 text-lg mb-2">一起来学习正确的化妆顺序吧！</p>
+          <p className="text-gray-600 text-lg mb-2">先定制你的专属角色，再开始学习正确的化妆顺序吧！</p>
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            从打乱的化妆步骤中，按正确顺序依次选择下一步~
+            选择你的肤色、脸型、场景和服装，打造属于你的完美形象~
             <br />
-            每一步都可以选你喜欢的产品色号，选错了会有提示，还有 3 次提示机会可以使用哦！✨
+            之后从打乱的化妆步骤中，按正确顺序依次选择下一步，每一步都可以选你喜欢的产品色号哦！✨
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">👤</span>
+              <span className="text-sm text-gray-600">定制专属形象</span>
+            </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">🎯</span>
               <span className="text-sm text-gray-600">按正确顺序选择</span>
@@ -160,12 +211,12 @@ export default function Home() {
           </div>
 
           <button
-            onClick={() => setStarted(true)}
+            onClick={handleGoToCustomize}
             className="group relative px-10 py-4 rounded-full bg-gradient-to-r from-pink-400 via-pink-300 to-lavender-300 text-white font-bold text-xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
           >
             <span className="flex items-center gap-2">
-              <Sparkles className="w-6 h-6 group-hover:animate-spin" />
-              开始挑战
+              <User className="w-6 h-6" />
+              开始定制角色
               <Sparkles className="w-6 h-6 group-hover:animate-spin" />
             </span>
           </button>
@@ -175,7 +226,7 @@ export default function Home() {
             <div>
               <p className="text-sm font-bold text-gray-700 mb-1">游戏玩法</p>
               <p className="text-xs text-gray-500 leading-relaxed">
-                右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
+                首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
                 从「洁面护肤」开始，按正确的化妆顺序依次点击每一步。
                 每选对一步就可以挑选一款你喜欢的产品色号~选错了会有震动提醒，实在不知道可以使用提示功能！
               </p>
@@ -191,9 +242,21 @@ export default function Home() {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden bg-pattern-dots">
         <Decorations showConfetti={showConfetti} />
 
-        <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in-up">
+        <div className="relative z-10 flex flex-col items-center gap-6 animate-fade-in-up">
+          {characterProfile && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {renderProfileBadge().map((text, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1.5 rounded-full bg-white/80 text-xs text-gray-700 shadow-sm border border-pink-100 font-medium"
+                >
+                  {text}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="w-72 md:w-80">
-            <Avatar effects={completedEffects} isComplete={true} />
+            <Avatar effects={completedEffects} isComplete={true} characterProfile={characterProfile ?? undefined} />
           </div>
           <SummaryCard onRestart={handleRestart} />
         </div>
@@ -214,6 +277,18 @@ export default function Home() {
               💄 小仙女化妆课堂
             </span>
           </h1>
+          {characterProfile && (
+            <div className="flex flex-wrap justify-center gap-1.5 mt-2 mb-2">
+              {renderProfileBadge().map((text, idx) => (
+                <span
+                  key={idx}
+                  className="px-2.5 py-0.5 rounded-full bg-white/70 text-xs text-gray-600 shadow-sm border border-pink-100"
+                >
+                  {text}
+                </span>
+              ))}
+            </div>
+          )}
           <p className="text-sm text-gray-500">
             从打乱的步骤中，找出正确的化妆顺序，每一步都可以挑选你喜欢的产品哦~
             {currentExpectedStep && !showHint && (
@@ -224,50 +299,50 @@ export default function Home() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
-          <div className="flex justify-center lg:sticky lg:top-8">
-            <div className="w-full max-w-sm animate-fade-in">
-              <Avatar effects={completedEffects} isComplete={false} />
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
+        <div className="flex justify-center lg:sticky lg:top-8">
+          <div className="w-full max-w-sm animate-fade-in">
+            <Avatar effects={completedEffects} isComplete={false} characterProfile={characterProfile ?? undefined} />
+          </div>
+        </div>
+
+        <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-xl border-2 border-pink-100">
+            <StepList
+              shuffledSteps={shuffledSteps}
+              expectedStepId={expectedStepId}
+              completedSteps={completedSteps}
+              wrongStepId={wrongStepId}
+              onStepClick={handleStepClick}
+              onUseHint={handleUseHint}
+              hintsRemaining={hintsRemaining}
+              showHint={showHint}
+            />
           </div>
 
-          <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-xl border-2 border-pink-100">
-              <StepList
-                shuffledSteps={shuffledSteps}
-                expectedStepId={expectedStepId}
-                completedSteps={completedSteps}
-                wrongStepId={wrongStepId}
-                onStepClick={handleStepClick}
-                onUseHint={handleUseHint}
-                hintsRemaining={hintsRemaining}
-                showHint={showHint}
-              />
-            </div>
-
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-400">
-                🎮 从列表中选择下一步正确的化妆步骤吧！
-              </p>
-            </div>
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-400">
+              🎮 从列表中选择下一步正确的化妆步骤吧！
+            </p>
           </div>
         </div>
       </div>
-
-      {showProductSelection && pendingStep && (
-        <ProductSelectionModal
-          step={pendingStep}
-          onSelect={handleProductSelect}
-        />
-      )}
-
-      {showTip && (
-        <TipModal
-          tip={currentTip}
-          stepName={currentTipName}
-          onClose={handleCloseTip}
-        />
-      )}
     </div>
-  );
+
+    {showProductSelection && pendingStep && (
+      <ProductSelectionModal
+        step={pendingStep}
+        onSelect={handleProductSelect}
+      />
+    )}
+
+    {showTip && (
+      <TipModal
+        tip={currentTip}
+        stepName={currentTipName}
+        onClose={handleCloseTip}
+      />
+    )}
+  </div>
+);
 }

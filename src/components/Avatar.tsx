@@ -1,8 +1,9 @@
-import { CompletedEffect, ProductOption } from "@/types";
+import { CompletedEffect, ProductOption, CharacterProfile, SkinTone, FaceShape } from "@/types";
 
 interface AvatarProps {
   effects: CompletedEffect;
   isComplete: boolean;
+  characterProfile?: CharacterProfile;
 }
 
 function getEffectProduct(effect: ProductOption | boolean | undefined): ProductOption | null {
@@ -20,7 +21,26 @@ function getColorFromEffect(
   return useColor2 ? (product.color2 || product.color || product.previewColor || defaultColor) : (product.color || product.previewColor || defaultColor);
 }
 
-export default function Avatar({ effects, isComplete }: AvatarProps) {
+const SKIN_TONE_COLORS: Record<SkinTone, { c1: string; c2: string }> = {
+  fair: { c1: "#FFE8D6", c2: "#FFD9B8" },
+  natural: { c1: "#FFD9B8", c2: "#F5C49A" },
+  wheat: { c1: "#E8B88F", c2: "#D4A373" },
+};
+
+function getFaceShapeParams(shape: FaceShape | null | undefined) {
+  switch (shape) {
+    case "round":
+      return { rx: 135, ry: 140, cheekCx1: 105, cheekCx2: 295, cheekCy: 270, highlightCx: 200, highlightCy: 250 };
+    case "oval":
+      return { rx: 118, ry: 155, cheekCx1: 115, cheekCx2: 285, cheekCy: 280, highlightCx: 200, highlightCy: 245 };
+    case "square":
+      return { rx: 130, ry: 135, cheekCx1: 108, cheekCx2: 292, cheekCy: 285, highlightCx: 200, highlightCy: 240 };
+    default:
+      return { rx: 125, ry: 145, cheekCx1: 115, cheekCx2: 285, cheekCy: 275, highlightCx: 200, highlightCy: 245 };
+  }
+}
+
+export default function Avatar({ effects, isComplete, characterProfile }: AvatarProps) {
   const skincareEffect = !!effects.skincare;
   const primerEffect = !!effects.primer;
   const foundationEffect = !!effects.foundation;
@@ -33,10 +53,18 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
   const blushEffect = !!effects.blush;
   const lipstickEffect = !!effects.lipstick;
 
-  const foundationColor1 = getColorFromEffect(effects.foundation, "#FFD9B8");
-  const foundationColor2 = getColorFromEffect(effects.foundation, "#F5C49A", true);
+  const skinTone = characterProfile?.skinTone;
+  const faceShape = characterProfile?.faceShape;
+  const scene = characterProfile?.scene;
+  const outfit = characterProfile?.outfitStyle;
+
+  const baseSkin = skinTone ? SKIN_TONE_COLORS[skinTone] : { c1: "#FFE4CC", c2: "#FFCBA4" };
+  const faceParams = getFaceShapeParams(faceShape);
+
+  const foundationColor1 = getColorFromEffect(effects.foundation, baseSkin.c1);
+  const foundationColor2 = getColorFromEffect(effects.foundation, baseSkin.c2, true);
   const primerColor = getColorFromEffect(effects.primer, "#FFF5F0");
-  const concealerColor = getColorFromEffect(effects.concealer, "#FFE4CC");
+  const concealerColor = getColorFromEffect(effects.concealer, baseSkin.c1);
   const powderColor = getColorFromEffect(effects.powder, "#FFF8F0");
   const browsColor = getColorFromEffect(effects.brows, "#5A3A1C");
   const eyeshadowColor1 = getColorFromEffect(effects.eyeshadow, "#FFB6C1");
@@ -47,23 +75,58 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
   const lipstickColor1 = getColorFromEffect(effects.lipstick, "#FF6B8A");
   const lipstickColor2 = getColorFromEffect(effects.lipstick, "#E85070", true);
 
+  const getOutfitColor = () => {
+    switch (outfit) {
+      case "casual":
+        return { c1: "#93C5FD", c2: "#60A5FA" };
+      case "dress":
+        return { c1: "#F9A8D4", c2: "#EC4899" };
+      case "suit":
+        return { c1: "#A5B4FC", c2: "#6366F1" };
+      case "resort":
+        return { c1: "#86EFAC", c2: "#22C55E" };
+      default:
+        return { c1: "#FBCFE8", c2: "#F9A8D4" };
+    }
+  };
+
+  const outfitColors = getOutfitColor();
+  const showOutfit = !!outfit;
+
+  const getSceneDecor = () => {
+    switch (scene) {
+      case "commute":
+        return { top: "🏙️", bottom: "☕" };
+      case "date":
+        return { top: "🌹", bottom: "💝" };
+      case "beach":
+        return { top: "🌴", bottom: "🐚" };
+      case "meeting":
+        return { top: "📊", bottom: "📝" };
+      default:
+        return null;
+    }
+  };
+
+  const sceneDecor = getSceneDecor();
+
   return (
     <div className="relative">
       <div className="absolute -inset-8 rounded-full bg-gradient-to-br from-pink-200 via-lavender-100 to-peach-100 opacity-60 blur-2xl animate-pulse-slow" />
       
       <div className="absolute top-2 left-1/2 -translate-x-1/2 text-5xl animate-float pointer-events-none z-10">
-        {isComplete ? "👑" : skincareEffect ? "💖" : "✨"}
+        {sceneDecor ? sceneDecor.top : (isComplete ? "👑" : skincareEffect ? "💖" : "✨")}
       </div>
 
       <svg
-        viewBox="0 0 400 450"
+        viewBox="0 0 400 480"
         className="relative w-full max-w-sm h-auto drop-shadow-2xl"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
           <radialGradient id="faceGradient" cx="50%" cy="40%" r="60%">
-            <stop offset="0%" stopColor="#FFE4CC" />
-            <stop offset="100%" stopColor="#FFCBA4" />
+            <stop offset="0%" stopColor={baseSkin.c1} />
+            <stop offset="100%" stopColor={baseSkin.c2} />
           </radialGradient>
           <radialGradient id="foundationGradient" cx="50%" cy="40%" r="60%">
             <stop offset="0%" stopColor={foundationColor1} />
@@ -85,6 +148,10 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
             <stop offset="0%" stopColor={blushColor1} />
             <stop offset="100%" stopColor={blushColor2} />
           </linearGradient>
+          <linearGradient id="outfitGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={outfitColors.c1} />
+            <stop offset="100%" stopColor={outfitColors.c2} />
+          </linearGradient>
           <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
@@ -94,8 +161,76 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
           </filter>
         </defs>
 
+        {showOutfit && (
+          <g className="makeup-layer" style={{ opacity: 1 }}>
+            {outfit === "dress" && (
+              <path
+                d="M 80 400 Q 100 380 150 385 L 200 370 L 250 385 Q 300 380 320 400 L 340 475 L 60 475 Z"
+                fill="url(#outfitGradient)"
+                opacity="0.9"
+              />
+            )}
+            {outfit === "casual" && (
+              <>
+                <path
+                  d="M 90 395 Q 120 380 200 380 Q 280 380 310 395 L 320 475 L 80 475 Z"
+                  fill="url(#outfitGradient)"
+                  opacity="0.9"
+                />
+                <path
+                  d="M 160 380 L 200 365 L 240 380 L 230 395 L 200 388 L 170 395 Z"
+                  fill={outfitColors.c2}
+                  opacity="0.6"
+                />
+              </>
+            )}
+            {outfit === "suit" && (
+              <>
+                <path
+                  d="M 85 395 Q 115 380 200 380 Q 285 380 315 395 L 325 475 L 75 475 Z"
+                  fill="url(#outfitGradient)"
+                  opacity="0.95"
+                />
+                <path
+                  d="M 155 380 L 200 368 L 245 380 L 230 475 L 200 475 L 170 475 Z"
+                  fill="white"
+                  opacity="0.9"
+                />
+                <circle cx="200" cy="410" r="3" fill={outfitColors.c2} />
+                <circle cx="200" cy="435" r="3" fill={outfitColors.c2} />
+                <circle cx="200" cy="460" r="3" fill={outfitColors.c2} />
+              </>
+            )}
+            {outfit === "resort" && (
+              <>
+                <path
+                  d="M 70 405 Q 100 382 170 388 L 200 372 L 230 388 Q 300 382 330 405 L 350 475 L 50 475 Z"
+                  fill="url(#outfitGradient)"
+                  opacity="0.85"
+                />
+                <path
+                  d="M 100 420 Q 130 415 160 425"
+                  stroke="white"
+                  strokeWidth="2"
+                  fill="none"
+                  opacity="0.7"
+                />
+                <path
+                  d="M 240 425 Q 270 415 300 420"
+                  stroke="white"
+                  strokeWidth="2"
+                  fill="none"
+                  opacity="0.7"
+                />
+                <circle cx="130" cy="450" r="4" fill="white" opacity="0.6" />
+                <circle cx="270" cy="450" r="4" fill="white" opacity="0.6" />
+              </>
+            )}
+          </g>
+        )}
+
         <g className="makeup-layer" style={{ opacity: 1 }}>
-          <ellipse cx="200" cy="200" rx="155" ry="175" fill="url(#hairGradient)" />
+          <ellipse cx="200" cy="200" rx={faceParams.rx + 35} ry={faceParams.ry + 35} fill="url(#hairGradient)" />
           <path
             d="M 60 220 Q 40 180 60 120 Q 80 60 200 50 Q 320 60 340 120 Q 360 180 340 220"
             fill="url(#hairGradient)"
@@ -103,7 +238,7 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
         </g>
 
         <g className="makeup-layer" style={{ opacity: 1 }}>
-          <ellipse cx="200" cy="230" rx="125" ry="145" fill="url(#faceGradient)" />
+          <ellipse cx="200" cy="230" rx={faceParams.rx} ry={faceParams.ry} fill="url(#faceGradient)" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: 1 }}>
@@ -122,8 +257,8 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
         </g>
 
         <g className="makeup-layer" style={{ opacity: 1 }}>
-          <ellipse cx="78" cy="240" rx="15" ry="25" fill="url(#faceGradient)" />
-          <ellipse cx="322" cy="240" rx="15" ry="25" fill="url(#faceGradient)" />
+          <ellipse cx={200 - faceParams.rx + 8} cy="240" rx="15" ry="25" fill="url(#faceGradient)" />
+          <ellipse cx={200 + faceParams.rx - 8} cy="240" rx="15" ry="25" fill="url(#faceGradient)" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: skincareEffect ? 1 : 0 }}>
@@ -134,11 +269,11 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
         </g>
 
         <g className="makeup-layer" style={{ opacity: primerEffect ? 1 : 0 }}>
-          <ellipse cx="200" cy="230" rx="125" ry="145" fill={primerColor} opacity="0.25" />
+          <ellipse cx="200" cy="230" rx={faceParams.rx} ry={faceParams.ry} fill={primerColor} opacity="0.25" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: foundationEffect ? 1 : 0 }}>
-          <ellipse cx="200" cy="230" rx="125" ry="145" fill="url(#foundationGradient)" opacity="0.85" />
+          <ellipse cx="200" cy="230" rx={faceParams.rx} ry={faceParams.ry} fill="url(#foundationGradient)" opacity="0.85" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: concealerEffect ? 1 : 0 }}>
@@ -148,7 +283,7 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
         </g>
 
         <g className="makeup-layer" style={{ opacity: powderEffect ? 1 : 0 }}>
-          <ellipse cx="200" cy="230" rx="125" ry="145" fill={powderColor} opacity="0.18" />
+          <ellipse cx="200" cy="230" rx={faceParams.rx} ry={faceParams.ry} fill={powderColor} opacity="0.18" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: browsEffect ? 1 : 0.2 }} filter={browsEffect ? undefined : "url(#softGlow)"}>
@@ -263,10 +398,10 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
         </g>
 
         <g className="makeup-layer" style={{ opacity: blushEffect ? 1 : 0 }}>
-          <ellipse cx="115" cy="275" rx="28" ry="18" fill="url(#blushGradient)" opacity="0.55" />
-          <ellipse cx="285" cy="275" rx="28" ry="18" fill="url(#blushGradient)" opacity="0.55" />
-          <ellipse cx="115" cy="272" rx="15" ry="8" fill={blushColor2} opacity="0.4" />
-          <ellipse cx="285" cy="272" rx="15" ry="8" fill={blushColor2} opacity="0.4" />
+          <ellipse cx={faceParams.cheekCx1} cy={faceParams.cheekCy} rx={faceShape === "round" ? 24 : 28} ry={faceShape === "square" ? 14 : 18} fill="url(#blushGradient)" opacity="0.55" />
+          <ellipse cx={faceParams.cheekCx2} cy={faceParams.cheekCy} rx={faceShape === "round" ? 24 : 28} ry={faceShape === "square" ? 14 : 18} fill="url(#blushGradient)" opacity="0.55" />
+          <ellipse cx={faceParams.cheekCx1} cy={faceParams.cheekCy - 3} rx={faceShape === "round" ? 12 : 15} ry={faceShape === "square" ? 6 : 8} fill={blushColor2} opacity="0.4" />
+          <ellipse cx={faceParams.cheekCx2} cy={faceParams.cheekCy - 3} rx={faceShape === "round" ? 12 : 15} ry={faceShape === "square" ? 6 : 8} fill={blushColor2} opacity="0.4" />
         </g>
 
         <g className="makeup-layer" style={{ opacity: 1 }}>
@@ -321,6 +456,12 @@ export default function Avatar({ effects, isComplete }: AvatarProps) {
             <g className="animate-sparkle" style={{ transformOrigin: "320px 370px", animationDelay: "0.7s" }}>
               <path d="M 320 360 L 323 370 L 333 373 L 323 376 L 320 386 L 317 376 L 307 373 L 317 370 Z" fill={eyeshadowColor1} />
             </g>
+          </g>
+        )}
+
+        {sceneDecor && !isComplete && (
+          <g className="makeup-layer" style={{ opacity: 0.9 }}>
+            <text x="320" y="420" fontSize="28">{sceneDecor.bottom}</text>
           </g>
         )}
       </svg>
