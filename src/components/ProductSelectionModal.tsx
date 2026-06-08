@@ -76,6 +76,7 @@ export default function ProductSelectionModal({
                 products={step.products}
                 onSelect={(product) => setSelectedId(product.id)}
                 selectedId={selectedId}
+                productCategory={step.effectKey}
               />
             </div>
 
