@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Sparkles, HelpCircle, User } from "lucide-react";
 import Avatar from "@/components/Avatar";
@@ -8,34 +8,9 @@ import SummaryCard from "@/components/SummaryCard";
 import Decorations from "@/components/Decorations";
 import ProductSelectionModal from "@/components/ProductSelectionModal";
 import MakeupDrawingCanvas from "@/components/MakeupDrawingCanvas";
-import { MAKEUP_STEPS } from "@/data/steps";
-import { CompletedEffect, MakeupStep, ProductOption, CharacterProfile, SkinToneOption, FaceShapeOption, SceneOption, OutfitStyleOption, GameMode, StepRecord } from "@/types";
-
-const SKIN_TONE_LABELS: Record<string, SkinToneOption> = {
-  fair: { id: "fair", name: "白皙肤色", color1: "#FFE8D6", color2: "#FFD9B8", icon: "🌸" },
-  natural: { id: "natural", name: "自然肤色", color1: "#FFD9B8", color2: "#F5C49A", icon: "🌷" },
-  wheat: { id: "wheat", name: "小麦肤色", color1: "#E8B88F", color2: "#D4A373", icon: "🌻" },
-};
-
-const FACE_SHAPE_LABELS: Record<string, FaceShapeOption> = {
-  round: { id: "round", name: "圆脸", icon: "😊", description: "可爱圆润" },
-  oval: { id: "oval", name: "鹅蛋脸", icon: "😄", description: "标准脸型" },
-  square: { id: "square", name: "方脸", icon: "😎", description: "轮廓分明" },
-};
-
-const SCENE_LABELS: Record<string, SceneOption> = {
-  commute: { id: "commute", name: "日常通勤", icon: "🚇", description: "清新自然" },
-  date: { id: "date", name: "约会晚宴", icon: "🌹", description: "精致甜美" },
-  beach: { id: "beach", name: "海边度假", icon: "🏖️", description: "阳光元气" },
-  meeting: { id: "meeting", name: "职场会议", icon: "💼", description: "干练专业" },
-};
-
-const OUTFIT_LABELS: Record<string, OutfitStyleOption> = {
-  casual: { id: "casual", name: "休闲T恤", icon: "👕", description: "轻松随性" },
-  dress: { id: "dress", name: "优雅连衣裙", icon: "👗", description: "温柔浪漫" },
-  suit: { id: "suit", name: "职场西装", icon: "🧥", description: "利落干练" },
-  resort: { id: "resort", name: "度假长裙", icon: "🌴", description: "飘逸灵动" },
-};
+import { useGameStore } from "@/store/useGameStore";
+import { MAKEUP_STEPS, SKIN_TONE_LABELS, FACE_SHAPE_LABELS, SCENE_LABELS, OUTFIT_LABELS } from "@/data";
+import { MakeupStep, ProductOption, CharacterProfile } from "@/types";
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -52,25 +27,47 @@ export default function Home() {
   const locationState = location.state as { characterProfile?: CharacterProfile } | null;
   const initialProfile = locationState?.characterProfile ?? null;
 
-  const [characterProfile] = useState<CharacterProfile | null>(initialProfile);
-  const [started, setStarted] = useState(!!initialProfile);
-  const [gameMode, setGameMode] = useState<GameMode>("guided");
-  const [expectedStepId, setExpectedStepId] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [stepHistory, setStepHistory] = useState<StepRecord[]>([]);
-  const [completedEffects, setCompletedEffects] = useState<CompletedEffect>({});
-  const [showTip, setShowTip] = useState(false);
-  const [currentTip, setCurrentTip] = useState("");
-  const [currentTipName, setCurrentTipName] = useState("");
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [wrongStepId, setWrongStepId] = useState<number | null>(null);
-  const [hintsRemaining, setHintsRemaining] = useState(3);
-  const [showHint, setShowHint] = useState(false);
-  const [showProductSelection, setShowProductSelection] = useState(false);
-  const [pendingStep, setPendingStep] = useState<MakeupStep | null>(null);
-  const [showDrawing, setShowDrawing] = useState(false);
-  const [drawingStep, setDrawingStep] = useState<MakeupStep | null>(null);
-  const [drawingProduct, setDrawingProduct] = useState<ProductOption | null>(null);
+  const store = useGameStore();
+
+  useEffect(() => {
+    if (initialProfile && !store.characterProfile) {
+      store.setCharacterProfile(initialProfile);
+      store.setStarted(true);
+    }
+  }, [initialProfile, store]);
+
+  const {
+    characterProfile,
+    started,
+    gameMode,
+    expectedStepId,
+    completedSteps,
+    stepHistory,
+    completedEffects,
+    showTip,
+    currentTip,
+    currentTipName,
+    showConfetti,
+    wrongStepId,
+    hintsRemaining,
+    showHint,
+    showProductSelection,
+    pendingStep,
+    showDrawing,
+    drawingStep,
+    drawingProduct,
+    setGameMode,
+    finalizeStep,
+    setWrongStep,
+    useHint,
+    setShowHint,
+    openProductSelection,
+    setPendingStep,
+    openDrawing,
+    closeDrawing,
+    closeTip,
+    resetGame,
+  } = store;
 
   const shuffledSteps = useMemo<MakeupStep[]>(() => {
     return shuffleArray(MAKEUP_STEPS);
@@ -78,137 +75,69 @@ export default function Home() {
 
   const isComplete = completedSteps.length === MAKEUP_STEPS.length;
 
-  const finalizeStep = useCallback((step: MakeupStep, product?: ProductOption) => {
-    setCompletedSteps((prev) => [...prev, step.id]);
-    setCompletedEffects((prev) => ({
-      ...prev,
-      [step.effectKey]: product ? product : true,
-    }));
-    setStepHistory((prev) => [
-      ...prev,
-      {
-        stepId: step.id,
-        stepName: step.name,
-        product,
-        completedAt: Date.now(),
-      },
-    ]);
-    setCurrentTip(step.tip);
-    setCurrentTipName(step.name);
-    setShowTip(true);
-
-    if (completedSteps.length + 1 === MAKEUP_STEPS.length) {
-      setTimeout(() => setShowConfetti(true), 500);
-    }
-  }, [completedSteps.length]);
-
   const handleStepClick = useCallback(
     (stepId: number) => {
       if (completedSteps.includes(stepId)) return;
 
       if (gameMode === "free" || stepId === expectedStepId) {
-        setWrongStepId(null);
+        setWrongStep(null);
         setShowHint(false);
         const step = MAKEUP_STEPS.find((s) => s.id === stepId);
         if (!step) return;
 
         if (step.products && step.products.length > 0) {
-          setPendingStep(step);
-          setShowProductSelection(true);
+          openProductSelection(step);
         } else if (step.drawingTool && step.targetZones) {
-          setDrawingStep(step);
-          setDrawingProduct(null);
-          setShowDrawing(true);
+          openDrawing(step, null);
         } else {
           finalizeStep(step);
         }
       } else {
-        setWrongStepId(stepId);
-        setTimeout(() => setWrongStepId(null), 600);
+        setWrongStep(stepId);
+        setTimeout(() => setWrongStep(null), 600);
       }
     },
-    [gameMode, expectedStepId, completedSteps, finalizeStep]
+    [gameMode, expectedStepId, completedSteps, setWrongStep, setShowHint, openProductSelection, openDrawing, finalizeStep]
   );
 
   const handleProductSelect = useCallback(
     (product: ProductOption) => {
       if (!pendingStep) return;
-      setShowProductSelection(false);
+      store.closeProductSelection();
       if (pendingStep.drawingTool && pendingStep.targetZones) {
-        setDrawingStep(pendingStep);
-        setDrawingProduct(product);
-        setShowDrawing(true);
+        openDrawing(pendingStep, product);
       } else {
         finalizeStep(pendingStep, product);
         setPendingStep(null);
       }
     },
-    [pendingStep, finalizeStep]
+    [pendingStep, store, openDrawing, finalizeStep, setPendingStep]
   );
 
   const handleDrawingComplete = useCallback(() => {
     if (!drawingStep) return;
-    setShowDrawing(false);
+    closeDrawing();
     finalizeStep(drawingStep, drawingProduct ?? undefined);
-    setDrawingStep(null);
-    setDrawingProduct(null);
-    setPendingStep(null);
-  }, [drawingStep, drawingProduct, finalizeStep]);
+  }, [drawingStep, drawingProduct, closeDrawing, finalizeStep]);
 
   const handleDrawingCancel = useCallback(() => {
-    setShowDrawing(false);
-    setDrawingStep(null);
-    setDrawingProduct(null);
-    setPendingStep(null);
-  }, []);
-
-  const handleCloseTip = useCallback(() => {
-    setShowTip(false);
-    if (gameMode === "guided" && expectedStepId < MAKEUP_STEPS.length) {
-      setExpectedStepId((prev) => prev + 1);
-    }
-  }, [gameMode, expectedStepId]);
+    closeDrawing();
+  }, [closeDrawing]);
 
   const handleUseHint = useCallback(() => {
-    if (hintsRemaining > 0) {
-      setHintsRemaining((prev) => prev - 1);
-      setShowHint(true);
-    }
-  }, [hintsRemaining]);
+    useHint();
+  }, [useHint]);
 
   const handleRestart = useCallback(() => {
-    setExpectedStepId(1);
-    setCompletedSteps([]);
-    setStepHistory([]);
-    setCompletedEffects({});
-    setShowConfetti(false);
-    setWrongStepId(null);
-    setHintsRemaining(3);
-    setShowHint(false);
-    setShowProductSelection(false);
-    setPendingStep(null);
-    setShowDrawing(false);
-    setDrawingStep(null);
-    setDrawingProduct(null);
-    setStarted(true);
-  }, []);
+    resetGame();
+  }, [resetGame]);
 
-  const handleModeChange = useCallback((mode: GameMode) => {
-    setGameMode(mode);
-    setExpectedStepId(1);
-    setCompletedSteps([]);
-    setStepHistory([]);
-    setCompletedEffects({});
-    setShowConfetti(false);
-    setWrongStepId(null);
-    setHintsRemaining(3);
-    setShowHint(false);
-    setShowProductSelection(false);
-    setPendingStep(null);
-    setShowDrawing(false);
-    setDrawingStep(null);
-    setDrawingProduct(null);
-  }, []);
+  const handleModeChange = useCallback(
+    (mode: "guided" | "free") => {
+      setGameMode(mode);
+    },
+    [setGameMode]
+  );
 
   const handleGoToCustomize = useCallback(() => {
     navigate("/customize");
@@ -217,10 +146,22 @@ export default function Home() {
   const renderProfileBadge = () => {
     if (!characterProfile) return null;
     const items: string[] = [];
-    if (characterProfile.skinTone) items.push(`${SKIN_TONE_LABELS[characterProfile.skinTone].icon}${SKIN_TONE_LABELS[characterProfile.skinTone].name}`);
-    if (characterProfile.faceShape) items.push(`${FACE_SHAPE_LABELS[characterProfile.faceShape].icon}${FACE_SHAPE_LABELS[characterProfile.faceShape].name}`);
-    if (characterProfile.scene) items.push(`${SCENE_LABELS[characterProfile.scene].icon}${SCENE_LABELS[characterProfile.scene].name}`);
-    if (characterProfile.outfitStyle) items.push(`${OUTFIT_LABELS[characterProfile.outfitStyle].icon}${OUTFIT_LABELS[characterProfile.outfitStyle].name}`);
+    if (characterProfile.skinTone)
+      items.push(
+        `${SKIN_TONE_LABELS[characterProfile.skinTone].icon}${SKIN_TONE_LABELS[characterProfile.skinTone].name}`
+      );
+    if (characterProfile.faceShape)
+      items.push(
+        `${FACE_SHAPE_LABELS[characterProfile.faceShape].icon}${FACE_SHAPE_LABELS[characterProfile.faceShape].name}`
+      );
+    if (characterProfile.scene)
+      items.push(
+        `${SCENE_LABELS[characterProfile.scene].icon}${SCENE_LABELS[characterProfile.scene].name}`
+      );
+    if (characterProfile.outfitStyle)
+      items.push(
+        `${OUTFIT_LABELS[characterProfile.outfitStyle].icon}${OUTFIT_LABELS[characterProfile.outfitStyle].name}`
+      );
     return items;
   };
 
@@ -255,7 +196,7 @@ export default function Home() {
             <p className="text-sm font-bold text-gray-600 mb-3">选择游戏模式</p>
             <div className="flex gap-3 justify-center">
               <button
-                onClick={() => setGameMode("guided")}
+                onClick={() => handleModeChange("guided")}
                 className={`flex-1 max-w-[200px] p-4 rounded-2xl border-2 transition-all duration-300 ${
                   gameMode === "guided"
                     ? "bg-gradient-to-br from-pink-100 to-lavender-100 border-pink-300 shadow-lg scale-105"
@@ -263,11 +204,13 @@ export default function Home() {
                 }`}
               >
                 <div className="text-3xl mb-2">📖</div>
-                <div className={`font-bold ${gameMode === "guided" ? "text-pink-500" : "text-gray-700"}`}>顺序教学</div>
+                <div className={`font-bold ${gameMode === "guided" ? "text-pink-500" : "text-gray-700"}`}>
+                  顺序教学
+                </div>
                 <div className="text-xs text-gray-500 mt-1">按正确步骤学习化妆</div>
               </button>
               <button
-                onClick={() => setGameMode("free")}
+                onClick={() => handleModeChange("free")}
                 className={`flex-1 max-w-[200px] p-4 rounded-2xl border-2 transition-all duration-300 ${
                   gameMode === "free"
                     ? "bg-gradient-to-br from-purple-100 to-pink-100 border-purple-300 shadow-lg scale-105"
@@ -275,7 +218,9 @@ export default function Home() {
                 }`}
               >
                 <div className="text-3xl mb-2">🎨</div>
-                <div className={`font-bold ${gameMode === "free" ? "text-purple-500" : "text-gray-700"}`}>自由创作</div>
+                <div className={`font-bold ${gameMode === "free" ? "text-purple-500" : "text-gray-700"}`}>
+                  自由创作
+                </div>
                 <div className="text-xs text-gray-500 mt-1">随意搭配发挥创意</div>
               </button>
             </div>
@@ -287,16 +232,18 @@ export default function Home() {
               <span className="text-sm text-gray-600">定制专属形象</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
-              <span className="text-lg">�</span>
+              <span className="text-lg">🛍️</span>
               <span className="text-sm text-gray-600">挑选喜爱的产品</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
-              <span className="text-lg">�️</span>
+              <span className="text-lg">🖌️</span>
               <span className="text-sm text-gray-600">拖拽绘画上妆</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">💡</span>
-              <span className="text-sm text-gray-600">{gameMode === "guided" ? "3次提示机会" : "无顺序限制"}</span>
+              <span className="text-sm text-gray-600">
+                {gameMode === "guided" ? "3次提示机会" : "无顺序限制"}
+              </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">📚</span>
@@ -321,15 +268,19 @@ export default function Home() {
               <p className="text-sm font-bold text-gray-700 mb-1">游戏玩法</p>
               <p className="text-xs text-gray-500 leading-relaxed">
                 {gameMode === "guided" ? (
-                  <>首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
-                  从「洁面护肤」开始，按正确的化妆顺序依次选择每一步。
-                  选对后先挑选你喜欢的产品色号，然后拿起化妆工具在人物脸上的高亮区域"画"出妆容，
-                  完成度达标才算过关哦！选错了会有震动提醒，实在不知道可以使用提示功能~</>
+                  <>
+                    首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
+                    从「洁面护肤」开始，按正确的化妆顺序依次选择每一步。
+                    选对后先挑选你喜欢的产品色号，然后拿起化妆工具在人物脸上的高亮区域"画"出妆容，
+                    完成度达标才算过关哦！选错了会有震动提醒，实在不知道可以使用提示功能~
+                  </>
                 ) : (
-                  <>首先定制你的专属形象，然后可以自由选择任意化妆步骤，不受顺序限制！
-                  尽情发挥创意，挑选你喜欢的产品色号，拿起化妆工具在人物脸上的高亮区域"画"出妆容，
-                  完成度达标即可。尝试夸张或混搭的妆容，打造属于你自己的独特风格~
-                  完成所有步骤后会记录你的创作顺序哦！✨</>
+                  <>
+                    首先定制你的专属形象，然后可以自由选择任意化妆步骤，不受顺序限制！
+                    尽情发挥创意，挑选你喜欢的产品色号，拿起化妆工具在人物脸上的高亮区域"画"出妆容，
+                    完成度达标即可。尝试夸张或混搭的妆容，打造属于你自己的独特风格~
+                    完成所有步骤后会记录你的创作顺序哦！✨
+                  </>
                 )}
               </p>
             </div>
@@ -358,7 +309,11 @@ export default function Home() {
             </div>
           )}
           <div className="w-72 md:w-80">
-            <Avatar effects={completedEffects} isComplete={true} characterProfile={characterProfile ?? undefined} />
+            <Avatar
+              effects={completedEffects}
+              isComplete={true}
+              characterProfile={characterProfile ?? undefined}
+            />
           </div>
           <SummaryCard
             onRestart={handleRestart}
@@ -442,64 +397,61 @@ export default function Home() {
           </p>
         </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
-        <div className="flex justify-center lg:sticky lg:top-8">
-          <div className="w-full max-w-sm animate-fade-in">
-            <Avatar effects={completedEffects} isComplete={false} characterProfile={characterProfile ?? undefined} />
-          </div>
-        </div>
-
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-xl border-2 border-pink-100">
-            <StepList
-              shuffledSteps={shuffledSteps}
-              expectedStepId={expectedStepId}
-              completedSteps={completedSteps}
-              wrongStepId={wrongStepId}
-              onStepClick={handleStepClick}
-              onUseHint={handleUseHint}
-              hintsRemaining={hintsRemaining}
-              showHint={showHint}
-              gameMode={gameMode}
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
+          <div className="flex justify-center lg:sticky lg:top-8">
+            <div className="w-full max-w-sm animate-fade-in">
+              <Avatar
+                effects={completedEffects}
+                isComplete={false}
+                characterProfile={characterProfile ?? undefined}
+              />
+            </div>
           </div>
 
-          <div className="mt-4 text-center">
-            <p className="text-xs text-gray-400">
-              {gameMode === "guided"
-                ? "🎮 选择正确的步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容吧！"
-                : "🎨 任意选择步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容，自由发挥创意！"}
-            </p>
+          <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 md:p-6 shadow-xl border-2 border-pink-100">
+              <StepList
+                shuffledSteps={shuffledSteps}
+                expectedStepId={expectedStepId}
+                completedSteps={completedSteps}
+                wrongStepId={wrongStepId}
+                onStepClick={handleStepClick}
+                onUseHint={handleUseHint}
+                hintsRemaining={hintsRemaining}
+                showHint={showHint}
+                gameMode={gameMode}
+              />
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-gray-400">
+                {gameMode === "guided"
+                  ? "🎮 选择正确的步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容吧！"
+                  : "🎨 任意选择步骤 → 挑选产品 → 拿起工具在脸上\"画\"出妆容，自由发挥创意！"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
+
+      {showProductSelection && pendingStep && (
+        <ProductSelectionModal step={pendingStep} onSelect={handleProductSelect} />
+      )}
+
+      {showDrawing && drawingStep && (
+        <MakeupDrawingCanvas
+          step={drawingStep}
+          selectedProduct={drawingProduct}
+          effects={completedEffects}
+          characterProfile={characterProfile ?? undefined}
+          onComplete={handleDrawingComplete}
+          onCancel={handleDrawingCancel}
+        />
+      )}
+
+      {showTip && (
+        <TipModal tip={currentTip} stepName={currentTipName} onClose={closeTip} />
+      )}
     </div>
-
-    {showProductSelection && pendingStep && (
-      <ProductSelectionModal
-        step={pendingStep}
-        onSelect={handleProductSelect}
-      />
-    )}
-
-    {showDrawing && drawingStep && (
-      <MakeupDrawingCanvas
-        step={drawingStep}
-        selectedProduct={drawingProduct}
-        effects={completedEffects}
-        characterProfile={characterProfile ?? undefined}
-        onComplete={handleDrawingComplete}
-        onCancel={handleDrawingCancel}
-      />
-    )}
-
-    {showTip && (
-      <TipModal
-        tip={currentTip}
-        stepName={currentTipName}
-        onClose={handleCloseTip}
-      />
-    )}
-  </div>
-);
+  );
 }

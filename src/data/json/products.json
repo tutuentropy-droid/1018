@@ -1,0 +1,57 @@
+{
+  "skincare": [
+    { "id": "skincare-1", "name": "保湿水乳套装", "icon": "💧", "previewColor": "#B8E6FF" },
+    { "id": "skincare-2", "name": "控油清爽套装", "icon": "🌿", "previewColor": "#C6F6D5" },
+    { "id": "skincare-3", "name": "抗老紧致套装", "icon": "✨", "previewColor": "#FDE68A" }
+  ],
+  "primer": [
+    { "id": "primer-1", "name": "紫色隔离（提亮暗黄）", "color": "#E9D8FD", "color2": "#D6BCFA", "previewColor": "#E9D8FD" },
+    { "id": "primer-2", "name": "绿色隔离（修饰泛红）", "color": "#C6F6D5", "color2": "#9AE6B4", "previewColor": "#C6F6D5" },
+    { "id": "primer-3", "name": "肤色妆前乳（自然）", "color": "#FFF5F0", "color2": "#FFE4CC", "previewColor": "#FFE4CC" }
+  ],
+  "foundation": [
+    { "id": "foundation-1", "name": "象牙白（冷白皮）", "color": "#FFE8D6", "color2": "#FFD9B8", "previewColor": "#FFD9B8" },
+    { "id": "foundation-2", "name": "自然色（黄调一白）", "color": "#FFD9B8", "color2": "#F5C49A", "previewColor": "#F5C49A" },
+    { "id": "foundation-3", "name": "小麦色（健康肤色）", "color": "#E8B88F", "color2": "#D4A373", "previewColor": "#D4A373" }
+  ],
+  "concealer": [
+    { "id": "concealer-1", "name": "亮色遮瑕（提亮泪沟）", "previewColor": "#FFE4CC", "color": "#FFE4CC" },
+    { "id": "concealer-2", "name": "自然色遮瑕（遮盖斑点）", "previewColor": "#FFD9B8", "color": "#FFD9B8" },
+    { "id": "concealer-3", "name": "橘色遮瑕（中和黑眼圈）", "previewColor": "#FFB380", "color": "#FFB380" }
+  ],
+  "powder": [
+    { "id": "powder-1", "name": "透明散粉（自然）", "previewColor": "#FFF8F0", "color": "#FFF8F0" },
+    { "id": "powder-2", "name": "粉色散粉（显气色）", "previewColor": "#FFE4E9", "color": "#FFE4E9" },
+    { "id": "powder-3", "name": "哑光散粉（控油）", "previewColor": "#FAF5FF", "color": "#FAF5FF" }
+  ],
+  "brows": [
+    { "id": "brows-1", "name": "深棕色（黑发/深棕发）", "previewColor": "#5A3A1C", "color": "#5A3A1C" },
+    { "id": "brows-2", "name": "浅棕色（棕发/栗发）", "previewColor": "#8B6F5C", "color": "#8B6F5C" },
+    { "id": "brows-3", "name": "灰黑色（自然黑发）", "previewColor": "#4A4A4A", "color": "#4A4A4A" }
+  ],
+  "eyeshadow": [
+    { "id": "eyeshadow-1", "name": "桃花粉盘（甜美约会）", "color": "#FFB6C1", "color2": "#FF9AAF", "previewColor": "#FFB6C1" },
+    { "id": "eyeshadow-2", "name": "大地色盘（日常通勤）", "color": "#D4A574", "color2": "#B8956E", "previewColor": "#D4A574" },
+    { "id": "eyeshadow-3", "name": "香芋紫盘（温柔气质）", "color": "#E9D8FD", "color2": "#C4B5FD", "previewColor": "#C4B5FD" }
+  ],
+  "eyeliner": [
+    { "id": "eyeliner-1", "name": "经典黑眼线（百搭）", "previewColor": "#2D1B0E", "color": "#2D1B0E" },
+    { "id": "eyeliner-2", "name": "深棕眼线（温柔自然）", "previewColor": "#5A3A1C", "color": "#5A3A1C" },
+    { "id": "eyeliner-3", "name": "棕色眼线（日常淡妆）", "previewColor": "#8B6F5C", "color": "#8B6F5C" }
+  ],
+  "mascara": [
+    { "id": "mascara-1", "name": "纤长款睫毛膏", "icon": "📏", "previewColor": "#2D1B0E" },
+    { "id": "mascara-2", "name": "浓密款睫毛膏", "icon": "💫", "previewColor": "#2D1B0E" },
+    { "id": "mascara-3", "name": "卷翘款睫毛膏", "icon": "⬆️", "previewColor": "#2D1B0E" }
+  ],
+  "blush": [
+    { "id": "blush-1", "name": "樱花粉（可爱少女）", "color": "#FFB6C1", "color2": "#FF9AAF", "previewColor": "#FFB6C1" },
+    { "id": "blush-2", "name": "蜜桃橘（元气活力）", "color": "#FFCBA4", "color2": "#FFB380", "previewColor": "#FFCBA4" },
+    { "id": "blush-3", "name": "梅子色（气质成熟）", "color": "#E9B8D4", "color2": "#D4A0C0", "previewColor": "#E9B8D4" }
+  ],
+  "lipstick": [
+    { "id": "lipstick-1", "name": "豆沙色（温柔日常）", "color": "#D48A8A", "color2": "#C47070", "previewColor": "#D48A8A" },
+    { "id": "lipstick-2", "name": "正红色（气场女王）", "color": "#FF3B5C", "color2": "#E85070", "previewColor": "#FF3B5C" },
+    { "id": "lipstick-3", "name": "奶茶色（素颜百搭）", "color": "#E8B4A0", "color2": "#D49A80", "previewColor": "#E8B4A0" }
+  ]
+}

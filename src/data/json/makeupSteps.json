@@ -1,0 +1,176 @@
+[
+  {
+    "id": 1,
+    "name": "洁面护肤",
+    "icon": "🧴",
+    "description": "清洁面部，涂抹水乳精华",
+    "tip": "护肤是化妆的基础！好的皮肤状态能让妆容更服帖持久~记得等护肤品吸收后再进行下一步哦！",
+    "effectKey": "skincare",
+    "productKey": "skincare",
+    "toolKey": "skincarePad",
+    "targetZones": [
+      { "cx": 200, "cy": 230, "rx": 100, "ry": 120 }
+    ],
+    "drawingHint": "用护肤棉轻轻拍打整个面部，帮助护肤品吸收~",
+    "coverageThreshold": 60
+  },
+  {
+    "id": 2,
+    "name": "妆前隔离",
+    "icon": "✨",
+    "description": "涂抹妆前乳或隔离霜",
+    "tip": "妆前乳可以填平毛孔，让底妆更细腻。绿色隔离修饰泛红，紫色隔离提亮暗黄哦！",
+    "effectKey": "primer",
+    "productKey": "primer",
+    "toolKey": "brushMedium",
+    "targetZones": [
+      { "cx": 200, "cy": 230, "rx": 100, "ry": 120 }
+    ],
+    "drawingHint": "用粉底刷从脸部中心向外均匀刷开隔离霜~",
+    "coverageThreshold": 65
+  },
+  {
+    "id": 3,
+    "name": "粉底液",
+    "icon": "💧",
+    "description": "用美妆蛋均匀推开粉底",
+    "tip": "选择和脖子颜色相近的色号才自然！用湿的美妆蛋以轻拍方式上妆更服帖~",
+    "effectKey": "foundation",
+    "productKey": "foundation",
+    "toolKey": "sponge",
+    "targetZones": [
+      { "cx": 200, "cy": 230, "rx": 110, "ry": 130 }
+    ],
+    "drawingHint": "用美妆蛋以轻拍方式均匀涂抹全脸，别忘了鼻翼和发际线哦~",
+    "coverageThreshold": 75
+  },
+  {
+    "id": 4,
+    "name": "遮瑕膏",
+    "icon": "🎯",
+    "description": "遮盖痘痘、黑眼圈和斑点",
+    "tip": "遮瑕要少量多次！用点涂的方式，不要来回摩擦。橘色遮瑕中和黑眼圈效果最好~",
+    "effectKey": "concealer",
+    "productKey": "concealer",
+    "toolKey": "concealerBrush",
+    "targetZones": [
+      { "cx": 155, "cy": 260, "rx": 25, "ry": 15 },
+      { "cx": 245, "cy": 260, "rx": 25, "ry": 15 },
+      { "cx": 280, "cy": 290, "rx": 12, "ry": 12 }
+    ],
+    "drawingHint": "在黑眼圈和有瑕疵的部位轻轻点涂遮瑕膏~",
+    "coverageThreshold": 70
+  },
+  {
+    "id": 5,
+    "name": "散粉定妆",
+    "icon": "🌸",
+    "description": "用散粉刷轻轻扫上蜜粉",
+    "tip": "定妆是控油持妆的关键！T区爱出油的地方可以多定一点，眼下用烘焙法定妆更持久~",
+    "effectKey": "powder",
+    "productKey": "powder",
+    "toolKey": "brushLarge",
+    "targetZones": [
+      { "cx": 200, "cy": 230, "rx": 110, "ry": 130 }
+    ],
+    "drawingHint": "用大散粉刷轻轻扫遍全脸，T区可以多扫几下~",
+    "coverageThreshold": 60
+  },
+  {
+    "id": 6,
+    "name": "画眉毛",
+    "icon": "✏️",
+    "description": "用眉笔勾勒自然眉形",
+    "tip": "眉头要浅眉尾要深，遵循'上虚下实'原则。用眉刷晕染开更自然~",
+    "effectKey": "brows",
+    "productKey": "brows",
+    "toolKey": "pencil",
+    "targetZones": [
+      { "cx": 150, "cy": 182, "rx": 30, "ry": 12 },
+      { "cx": 250, "cy": 182, "rx": 30, "ry": 12 }
+    ],
+    "drawingHint": "用眉笔顺着眉毛生长方向，勾勒出自然的眉形~",
+    "coverageThreshold": 65
+  },
+  {
+    "id": 7,
+    "name": "画眼影",
+    "icon": "🎨",
+    "description": "由浅到深叠加眼影颜色",
+    "tip": "眼影万能公式：浅色打底+中间色晕染眼褶+深色加深眼尾和下眼睑~少量多次最重要！",
+    "effectKey": "eyeshadow",
+    "productKey": "eyeshadow",
+    "toolKey": "brushSmall",
+    "targetZones": [
+      { "cx": 155, "cy": 215, "rx": 32, "ry": 20 },
+      { "cx": 245, "cy": 215, "rx": 32, "ry": 20 }
+    ],
+    "drawingHint": "用眼影刷在眼皮上由浅到深慢慢晕染开~",
+    "coverageThreshold": 70
+  },
+  {
+    "id": 8,
+    "name": "画眼线",
+    "icon": "🖊️",
+    "description": "沿着睫毛根部画眼线",
+    "tip": "新手可以分段画，先画眼尾再连眼中！想要眼尾上扬就沿着下眼睑延长线的方向~",
+    "effectKey": "eyeliner",
+    "productKey": "eyeliner",
+    "toolKey": "eyelinerPen",
+    "targetZones": [
+      { "cx": 155, "cy": 212, "rx": 30, "ry": 8 },
+      { "cx": 245, "cy": 212, "rx": 30, "ry": 8 }
+    ],
+    "drawingHint": "沿着睫毛根部细细地画一条眼线，眼尾可以微微上扬~",
+    "coverageThreshold": 60
+  },
+  {
+    "id": 9,
+    "name": "睫毛膏",
+    "icon": "👁️",
+    "description": "用睫毛膏刷出卷翘睫毛",
+    "tip": "刷之前先用睫毛夹夹翘！以'Z'字形从根部往上刷，下睫毛也要照顾到哦~",
+    "effectKey": "mascara",
+    "productKey": "mascara",
+    "toolKey": "mascaraWand",
+    "targetZones": [
+      { "cx": 155, "cy": 206, "rx": 28, "ry": 15 },
+      { "cx": 245, "cy": 206, "rx": 28, "ry": 15 },
+      { "cx": 155, "cy": 242, "rx": 22, "ry": 10 },
+      { "cx": 245, "cy": 242, "rx": 22, "ry": 10 }
+    ],
+    "drawingHint": "以Z字形从睫毛根部往上刷，上下睫毛都要刷到~",
+    "coverageThreshold": 65
+  },
+  {
+    "id": 10,
+    "name": "腮红",
+    "icon": "🍑",
+    "description": "笑起来在苹果肌上打腮红",
+    "tip": "腮红选对位置超减龄！圆形扫显可爱，斜向扫显瘦脸，记得不要低于鼻翼哦~",
+    "effectKey": "blush",
+    "productKey": "blush",
+    "toolKey": "brushBlush",
+    "targetZones": [
+      { "cx": 125, "cy": 275, "rx": 28, "ry": 18 },
+      { "cx": 275, "cy": 275, "rx": 28, "ry": 18 }
+    ],
+    "drawingHint": "笑起来，用腮红刷在苹果肌上以打圈方式晕染~",
+    "coverageThreshold": 70
+  },
+  {
+    "id": 11,
+    "name": "口红",
+    "icon": "💄",
+    "description": "涂上喜欢的口红颜色",
+    "tip": "涂口红前先涂润唇膏打底！用唇线笔勾勒唇形更精致，咬唇妆显嫩、满涂显气场~",
+    "effectKey": "lipstick",
+    "productKey": "lipstick",
+    "toolKey": "lipstick",
+    "targetZones": [
+      { "cx": 200, "cy": 330, "rx": 40, "ry": 22 }
+    ],
+    "drawingHint": "先勾勒唇线，再填满唇部，打造精致唇妆~",
+    "coverageThreshold": 75
+  }
+]

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Sparkles, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
-import { MAKEUP_STEPS } from "@/data/steps";
+import { MAKEUP_STEPS } from "@/data";
 import Avatar from "./Avatar";
 import { GameMode, StepRecord, CompletedEffect, CharacterProfile } from "@/types";
 

@@ -21,6 +21,20 @@ export interface DrawingTool {
   name: string;
 }
 
+export interface MakeupStepRaw {
+  id: number;
+  name: string;
+  icon: string;
+  description: string;
+  tip: string;
+  effectKey: string;
+  productKey?: string;
+  toolKey?: string;
+  targetZones?: TargetZone[];
+  drawingHint?: string;
+  coverageThreshold?: number;
+}
+
 export interface MakeupStep {
   id: number;
   name: string;
@@ -33,6 +47,26 @@ export interface MakeupStep {
   targetZones?: TargetZone[];
   drawingHint?: string;
   coverageThreshold?: number;
+}
+
+export interface OutfitColors {
+  c1: string;
+  c2: string;
+}
+
+export interface SceneDecoration {
+  top: string;
+  bottom: string;
+}
+
+export interface FaceShapeParams {
+  rx: number;
+  ry: number;
+  cheekCx1: number;
+  cheekCx2: number;
+  cheekCy: number;
+  highlightCx: number;
+  highlightCy: number;
 }
 
 export interface CompletedEffect {

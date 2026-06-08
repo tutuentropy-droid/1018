@@ -3,43 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight, ChevronLeft, Sparkles, Check } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import Decorations from "@/components/Decorations";
+import { useGameStore } from "@/store/useGameStore";
 import {
   CharacterProfile,
   SkinTone,
   FaceShape,
   Scene,
   OutfitStyle,
-  SkinToneOption,
-  FaceShapeOption,
-  SceneOption,
-  OutfitStyleOption,
 } from "@/types";
-
-const SKIN_TONE_OPTIONS: SkinToneOption[] = [
-  { id: "fair", name: "白皙肤色", color1: "#FFE8D6", color2: "#FFD9B8", icon: "🌸" },
-  { id: "natural", name: "自然肤色", color1: "#FFD9B8", color2: "#F5C49A", icon: "🌷" },
-  { id: "wheat", name: "小麦肤色", color1: "#E8B88F", color2: "#D4A373", icon: "🌻" },
-];
-
-const FACE_SHAPE_OPTIONS: FaceShapeOption[] = [
-  { id: "round", name: "圆脸", icon: "😊", description: "可爱圆润，腮红靠上更显活力" },
-  { id: "oval", name: "鹅蛋脸", icon: "😄", description: "标准脸型，适合各种妆容" },
-  { id: "square", name: "方脸", icon: "😎", description: "轮廓分明，修容柔和线条" },
-];
-
-const SCENE_OPTIONS: SceneOption[] = [
-  { id: "commute", name: "日常通勤", icon: "🚇", description: "清新自然，淡妆得体" },
-  { id: "date", name: "约会晚宴", icon: "🌹", description: "精致甜美，氛围感拉满" },
-  { id: "beach", name: "海边度假", icon: "🏖️", description: "阳光元气，防水持久" },
-  { id: "meeting", name: "职场会议", icon: "💼", description: "干练专业，气场十足" },
-];
-
-const OUTFIT_STYLE_OPTIONS: OutfitStyleOption[] = [
-  { id: "casual", name: "休闲T恤", icon: "👕", description: "轻松随性，青春活力" },
-  { id: "dress", name: "优雅连衣裙", icon: "👗", description: "温柔浪漫，女神气质" },
-  { id: "suit", name: "职场西装", icon: "🧥", description: "利落干练，职业精英" },
-  { id: "resort", name: "度假长裙", icon: "🌴", description: "飘逸灵动，度假风情" },
-];
+import {
+  SKIN_TONE_LIST,
+  FACE_SHAPE_LIST,
+  SCENE_LIST,
+  OUTFIT_STYLE_LIST,
+} from "@/data";
 
 const STEPS = [
   { key: "skinTone", title: "选择肤色", subtitle: "Step 1/4" },
@@ -55,26 +32,15 @@ const SCENE_BG: Record<Scene, string> = {
   meeting: "from-slate-100 via-indigo-50 to-purple-100",
 };
 
-const SCENE_EMOJI: Record<Scene, string> = {
-  commute: "🚇",
-  date: "🌹",
-  beach: "🏖️",
-  meeting: "💼",
-};
-
-const OUTFIT_EMOJI: Record<OutfitStyle, string> = {
-  casual: "👕",
-  dress: "👗",
-  suit: "🧥",
-  resort: "🌴",
-};
-
 interface CharacterCustomizationProps {
   onComplete?: (profile: CharacterProfile) => void;
 }
 
 export default function CharacterCustomization({ onComplete }: CharacterCustomizationProps) {
   const navigate = useNavigate();
+  const setCharacterProfile = useGameStore((s) => s.setCharacterProfile);
+  const setStarted = useGameStore((s) => s.setStarted);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [profile, setProfile] = useState<CharacterProfile>({
     skinTone: null,
@@ -102,7 +68,9 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
       if (onComplete) {
         onComplete(profile);
       }
-      navigate("/", { state: { characterProfile: profile } });
+      setCharacterProfile(profile);
+      setStarted(true);
+      navigate("/");
     } else {
       setCurrentStep((prev) => prev + 1);
     }
@@ -128,7 +96,7 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
       case "skinTone":
         return (
           <div className="grid grid-cols-3 gap-4">
-            {SKIN_TONE_OPTIONS.map((option) => {
+            {SKIN_TONE_LIST.map((option) => {
               const selected = profile.skinTone === option.id;
               return (
                 <button
@@ -162,7 +130,7 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
       case "faceShape":
         return (
           <div className="grid grid-cols-3 gap-4">
-            {FACE_SHAPE_OPTIONS.map((option) => {
+            {FACE_SHAPE_LIST.map((option) => {
               const selected = profile.faceShape === option.id;
               return (
                 <button
@@ -210,7 +178,7 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
       case "scene":
         return (
           <div className="grid grid-cols-2 gap-4">
-            {SCENE_OPTIONS.map((option) => {
+            {SCENE_LIST.map((option) => {
               const selected = profile.scene === option.id;
               return (
                 <button
@@ -243,7 +211,7 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
       case "outfitStyle":
         return (
           <div className="grid grid-cols-2 gap-4">
-            {OUTFIT_STYLE_OPTIONS.map((option) => {
+            {OUTFIT_STYLE_LIST.map((option) => {
               const selected = profile.outfitStyle === option.id;
               return (
                 <button
@@ -281,18 +249,20 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
   const renderProfileSummary = () => {
     const parts: string[] = [];
     if (profile.skinTone) {
-      const opt = SKIN_TONE_OPTIONS.find((o) => o.id === profile.skinTone);
+      const opt = SKIN_TONE_LIST.find((o) => o.id === profile.skinTone);
       if (opt) parts.push(`${opt.icon}${opt.name}`);
     }
     if (profile.faceShape) {
-      const opt = FACE_SHAPE_OPTIONS.find((o) => o.id === profile.faceShape);
+      const opt = FACE_SHAPE_LIST.find((o) => o.id === profile.faceShape);
       if (opt) parts.push(`${opt.icon}${opt.name}`);
     }
     if (profile.scene) {
-      parts.push(`${SCENE_EMOJI[profile.scene]}${SCENE_OPTIONS.find((o) => o.id === profile.scene)?.name}`);
+      const opt = SCENE_LIST.find((o) => o.id === profile.scene);
+      if (opt) parts.push(`${opt.icon}${opt.name}`);
     }
     if (profile.outfitStyle) {
-      parts.push(`${OUTFIT_EMOJI[profile.outfitStyle]}${OUTFIT_STYLE_OPTIONS.find((o) => o.id === profile.outfitStyle)?.name}`);
+      const opt = OUTFIT_STYLE_LIST.find((o) => o.id === profile.outfitStyle);
+      if (opt) parts.push(`${opt.icon}${opt.name}`);
     }
     return parts;
   };
@@ -330,40 +300,22 @@ export default function CharacterCustomization({ onComplete }: CharacterCustomiz
               <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-4 shadow-lg border border-white">
                 <Avatar effects={{}} isComplete={false} characterProfile={profile} />
 
-                {(profile.scene || profile.outfitStyle) && (
-                  <div className="mt-3 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-pink-100 to-lavender-100 border border-pink-200">
-                      {profile.scene && (
-                        <span className="text-sm">{SCENE_EMOJI[profile.scene]}</span>
-                      )}
-                      {profile.outfitStyle && (
-                        <span className="text-sm">{OUTFIT_EMOJI[profile.outfitStyle]}</span>
-                      )}
-                      <span className="text-xs font-medium text-gray-600">
-                        {profile.scene && SCENE_OPTIONS.find((o) => o.id === profile.scene)?.name}
-                        {profile.scene && profile.outfitStyle && " · "}
-                        {profile.outfitStyle && OUTFIT_STYLE_OPTIONS.find((o) => o.id === profile.outfitStyle)?.name}
-                      </span>
+                {renderProfileSummary().length > 0 && (
+                  <div className="mt-4 bg-white/60 backdrop-blur-sm rounded-2xl p-3 border border-pink-100">
+                    <p className="text-xs font-bold text-gray-600 mb-2">已选择：</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {renderProfileSummary().map((text, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-full bg-white text-xs text-gray-600 shadow-sm border border-pink-100"
+                        >
+                          {text}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
-
-              {renderProfileSummary().length > 0 && (
-                <div className="mt-4 bg-white/60 backdrop-blur-sm rounded-2xl p-3 border border-pink-100">
-                  <p className="text-xs font-bold text-gray-600 mb-2">已选择：</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {renderProfileSummary().map((text, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-full bg-white text-xs text-gray-600 shadow-sm border border-pink-100"
-                      >
-                        {text}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

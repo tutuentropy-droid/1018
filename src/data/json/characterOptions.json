@@ -1,0 +1,43 @@
+{
+  "skinTones": {
+    "fair": { "id": "fair", "name": "白皙肤色", "color1": "#FFE8D6", "color2": "#FFD9B8", "icon": "🌸" },
+    "natural": { "id": "natural", "name": "自然肤色", "color1": "#FFD9B8", "color2": "#F5C49A", "icon": "🌷" },
+    "wheat": { "id": "wheat", "name": "小麦肤色", "color1": "#E8B88F", "color2": "#D4A373", "icon": "🌻" }
+  },
+  "faceShapes": {
+    "round": { "id": "round", "name": "圆脸", "icon": "😊", "description": "可爱圆润" },
+    "oval": { "id": "oval", "name": "鹅蛋脸", "icon": "😄", "description": "标准脸型" },
+    "square": { "id": "square", "name": "方脸", "icon": "😎", "description": "轮廓分明" }
+  },
+  "scenes": {
+    "commute": { "id": "commute", "name": "日常通勤", "icon": "🚇", "description": "清新自然" },
+    "date": { "id": "date", "name": "约会晚宴", "icon": "🌹", "description": "精致甜美" },
+    "beach": { "id": "beach", "name": "海边度假", "icon": "🏖️", "description": "阳光元气" },
+    "meeting": { "id": "meeting", "name": "职场会议", "icon": "💼", "description": "干练专业" }
+  },
+  "outfitStyles": {
+    "casual": { "id": "casual", "name": "休闲T恤", "icon": "👕", "description": "轻松随性" },
+    "dress": { "id": "dress", "name": "优雅连衣裙", "icon": "👗", "description": "温柔浪漫" },
+    "suit": { "id": "suit", "name": "职场西装", "icon": "🧥", "description": "利落干练" },
+    "resort": { "id": "resort", "name": "度假长裙", "icon": "🌴", "description": "飘逸灵动" }
+  },
+  "outfitColors": {
+    "casual": { "c1": "#93C5FD", "c2": "#60A5FA" },
+    "dress": { "c1": "#F9A8D4", "c2": "#EC4899" },
+    "suit": { "c1": "#A5B4FC", "c2": "#6366F1" },
+    "resort": { "c1": "#86EFAC", "c2": "#22C55E" },
+    "default": { "c1": "#FBCFE8", "c2": "#F9A8D4" }
+  },
+  "sceneDecorations": {
+    "commute": { "top": "🏙️", "bottom": "☕" },
+    "date": { "top": "🌹", "bottom": "💝" },
+    "beach": { "top": "🌴", "bottom": "🐚" },
+    "meeting": { "top": "📊", "bottom": "📝" }
+  },
+  "faceShapeParams": {
+    "round": { "rx": 135, "ry": 140, "cheekCx1": 105, "cheekCx2": 295, "cheekCy": 270, "highlightCx": 200, "highlightCy": 250 },
+    "oval": { "rx": 118, "ry": 155, "cheekCx1": 115, "cheekCx2": 285, "cheekCy": 280, "highlightCx": 200, "highlightCy": 245 },
+    "square": { "rx": 130, "ry": 135, "cheekCx1": 108, "cheekCx2": 292, "cheekCy": 285, "highlightCx": 200, "highlightCy": 240 },
+    "default": { "rx": 125, "ry": 145, "cheekCx1": 115, "cheekCx2": 285, "cheekCy": 275, "highlightCx": 200, "highlightCy": 245 }
+  }
+}

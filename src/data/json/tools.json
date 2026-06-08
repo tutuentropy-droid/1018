@@ -1,0 +1,68 @@
+{
+  "sponge": {
+    "type": "sponge",
+    "icon": "🥚",
+    "size": 30,
+    "name": "美妆蛋"
+  },
+  "brushLarge": {
+    "type": "brush",
+    "icon": "🖌️",
+    "size": 45,
+    "name": "散粉刷"
+  },
+  "brushMedium": {
+    "type": "brush",
+    "icon": "🖌️",
+    "size": 35,
+    "name": "粉底刷"
+  },
+  "brushSmall": {
+    "type": "brush",
+    "icon": "🖌️",
+    "size": 22,
+    "name": "眼影刷"
+  },
+  "brushBlush": {
+    "type": "brush",
+    "icon": "🖌️",
+    "size": 30,
+    "name": "腮红刷"
+  },
+  "concealerBrush": {
+    "type": "brush",
+    "icon": "🖌️",
+    "size": 18,
+    "name": "遮瑕刷"
+  },
+  "pencil": {
+    "type": "pencil",
+    "icon": "✏️",
+    "size": 12,
+    "name": "眉笔"
+  },
+  "eyelinerPen": {
+    "type": "pencil",
+    "icon": "🖊️",
+    "size": 10,
+    "name": "眼线笔"
+  },
+  "mascaraWand": {
+    "type": "stick",
+    "icon": "👁️",
+    "size": 16,
+    "name": "睫毛刷"
+  },
+  "lipstick": {
+    "type": "stick",
+    "icon": "💄",
+    "size": 18,
+    "name": "口红"
+  },
+  "skincarePad": {
+    "type": "sponge",
+    "icon": "🧴",
+    "size": 40,
+    "name": "护肤棉"
+  }
+}
