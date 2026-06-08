@@ -7,6 +7,20 @@ export interface ProductOption {
   icon?: string;
 }
 
+export interface TargetZone {
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+}
+
+export interface DrawingTool {
+  type: "brush" | "pencil" | "sponge" | "stick";
+  icon: string;
+  size: number;
+  name: string;
+}
+
 export interface MakeupStep {
   id: number;
   name: string;
@@ -15,6 +29,10 @@ export interface MakeupStep {
   tip: string;
   effectKey: string;
   products?: ProductOption[];
+  drawingTool?: DrawingTool;
+  targetZones?: TargetZone[];
+  drawingHint?: string;
+  coverageThreshold?: number;
 }
 
 export interface CompletedEffect {

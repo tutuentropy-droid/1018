@@ -8,6 +8,12 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "清洁面部，涂抹水乳精华",
     tip: "护肤是化妆的基础！好的皮肤状态能让妆容更服帖持久~记得等护肤品吸收后再进行下一步哦！",
     effectKey: "skincare",
+    drawingTool: { type: "sponge", icon: "🧴", size: 40, name: "护肤棉" },
+    targetZones: [
+      { cx: 200, cy: 230, rx: 100, ry: 120 },
+    ],
+    drawingHint: "用护肤棉轻轻拍打整个面部，帮助护肤品吸收~",
+    coverageThreshold: 60,
     products: [
       { id: "skincare-1", name: "保湿水乳套装", icon: "💧", previewColor: "#B8E6FF" },
       { id: "skincare-2", name: "控油清爽套装", icon: "🌿", previewColor: "#C6F6D5" },
@@ -21,6 +27,12 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "涂抹妆前乳或隔离霜",
     tip: "妆前乳可以填平毛孔，让底妆更细腻。绿色隔离修饰泛红，紫色隔离提亮暗黄哦！",
     effectKey: "primer",
+    drawingTool: { type: "brush", icon: "🖌️", size: 35, name: "粉底刷" },
+    targetZones: [
+      { cx: 200, cy: 230, rx: 100, ry: 120 },
+    ],
+    drawingHint: "用粉底刷从脸部中心向外均匀刷开隔离霜~",
+    coverageThreshold: 65,
     products: [
       { id: "primer-1", name: "紫色隔离（提亮暗黄）", color: "#E9D8FD", color2: "#D6BCFA", previewColor: "#E9D8FD" },
       { id: "primer-2", name: "绿色隔离（修饰泛红）", color: "#C6F6D5", color2: "#9AE6B4", previewColor: "#C6F6D5" },
@@ -34,6 +46,12 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "用美妆蛋均匀推开粉底",
     tip: "选择和脖子颜色相近的色号才自然！用湿的美妆蛋以轻拍方式上妆更服帖~",
     effectKey: "foundation",
+    drawingTool: { type: "sponge", icon: "🥚", size: 30, name: "美妆蛋" },
+    targetZones: [
+      { cx: 200, cy: 230, rx: 110, ry: 130 },
+    ],
+    drawingHint: "用美妆蛋以轻拍方式均匀涂抹全脸，别忘了鼻翼和发际线哦~",
+    coverageThreshold: 75,
     products: [
       { id: "foundation-1", name: "象牙白（冷白皮）", color: "#FFE8D6", color2: "#FFD9B8", previewColor: "#FFD9B8" },
       { id: "foundation-2", name: "自然色（黄调一白）", color: "#FFD9B8", color2: "#F5C49A", previewColor: "#F5C49A" },
@@ -47,6 +65,14 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "遮盖痘痘、黑眼圈和斑点",
     tip: "遮瑕要少量多次！用点涂的方式，不要来回摩擦。橘色遮瑕中和黑眼圈效果最好~",
     effectKey: "concealer",
+    drawingTool: { type: "brush", icon: "🖌️", size: 18, name: "遮瑕刷" },
+    targetZones: [
+      { cx: 155, cy: 260, rx: 25, ry: 15 },
+      { cx: 245, cy: 260, rx: 25, ry: 15 },
+      { cx: 280, cy: 290, rx: 12, ry: 12 },
+    ],
+    drawingHint: "在黑眼圈和有瑕疵的部位轻轻点涂遮瑕膏~",
+    coverageThreshold: 70,
     products: [
       { id: "concealer-1", name: "亮色遮瑕（提亮泪沟）", previewColor: "#FFE4CC", color: "#FFE4CC" },
       { id: "concealer-2", name: "自然色遮瑕（遮盖斑点）", previewColor: "#FFD9B8", color: "#FFD9B8" },
@@ -60,6 +86,12 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "用散粉刷轻轻扫上蜜粉",
     tip: "定妆是控油持妆的关键！T区爱出油的地方可以多定一点，眼下用烘焙法定妆更持久~",
     effectKey: "powder",
+    drawingTool: { type: "brush", icon: "🖌️", size: 45, name: "散粉刷" },
+    targetZones: [
+      { cx: 200, cy: 230, rx: 110, ry: 130 },
+    ],
+    drawingHint: "用大散粉刷轻轻扫遍全脸，T区可以多扫几下~",
+    coverageThreshold: 60,
     products: [
       { id: "powder-1", name: "透明散粉（自然）", previewColor: "#FFF8F0", color: "#FFF8F0" },
       { id: "powder-2", name: "粉色散粉（显气色）", previewColor: "#FFE4E9", color: "#FFE4E9" },
@@ -73,6 +105,13 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "用眉笔勾勒自然眉形",
     tip: "眉头要浅眉尾要深，遵循'上虚下实'原则。用眉刷晕染开更自然~",
     effectKey: "brows",
+    drawingTool: { type: "pencil", icon: "✏️", size: 12, name: "眉笔" },
+    targetZones: [
+      { cx: 150, cy: 182, rx: 30, ry: 12 },
+      { cx: 250, cy: 182, rx: 30, ry: 12 },
+    ],
+    drawingHint: "用眉笔顺着眉毛生长方向，勾勒出自然的眉形~",
+    coverageThreshold: 65,
     products: [
       { id: "brows-1", name: "深棕色（黑发/深棕发）", previewColor: "#5A3A1C", color: "#5A3A1C" },
       { id: "brows-2", name: "浅棕色（棕发/栗发）", previewColor: "#8B6F5C", color: "#8B6F5C" },
@@ -86,6 +125,13 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "由浅到深叠加眼影颜色",
     tip: "眼影万能公式：浅色打底+中间色晕染眼褶+深色加深眼尾和下眼睑~少量多次最重要！",
     effectKey: "eyeshadow",
+    drawingTool: { type: "brush", icon: "🖌️", size: 22, name: "眼影刷" },
+    targetZones: [
+      { cx: 155, cy: 215, rx: 32, ry: 20 },
+      { cx: 245, cy: 215, rx: 32, ry: 20 },
+    ],
+    drawingHint: "用眼影刷在眼皮上由浅到深慢慢晕染开~",
+    coverageThreshold: 70,
     products: [
       { id: "eyeshadow-1", name: "桃花粉盘（甜美约会）", color: "#FFB6C1", color2: "#FF9AAF", previewColor: "#FFB6C1" },
       { id: "eyeshadow-2", name: "大地色盘（日常通勤）", color: "#D4A574", color2: "#B8956E", previewColor: "#D4A574" },
@@ -99,6 +145,13 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "沿着睫毛根部画眼线",
     tip: "新手可以分段画，先画眼尾再连眼中！想要眼尾上扬就沿着下眼睑延长线的方向~",
     effectKey: "eyeliner",
+    drawingTool: { type: "pencil", icon: "🖊️", size: 10, name: "眼线笔" },
+    targetZones: [
+      { cx: 155, cy: 212, rx: 30, ry: 8 },
+      { cx: 245, cy: 212, rx: 30, ry: 8 },
+    ],
+    drawingHint: "沿着睫毛根部细细地画一条眼线，眼尾可以微微上扬~",
+    coverageThreshold: 60,
     products: [
       { id: "eyeliner-1", name: "经典黑眼线（百搭）", previewColor: "#2D1B0E", color: "#2D1B0E" },
       { id: "eyeliner-2", name: "深棕眼线（温柔自然）", previewColor: "#5A3A1C", color: "#5A3A1C" },
@@ -112,6 +165,15 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "用睫毛膏刷出卷翘睫毛",
     tip: "刷之前先用睫毛夹夹翘！以'Z'字形从根部往上刷，下睫毛也要照顾到哦~",
     effectKey: "mascara",
+    drawingTool: { type: "stick", icon: "👁️", size: 16, name: "睫毛刷" },
+    targetZones: [
+      { cx: 155, cy: 206, rx: 28, ry: 15 },
+      { cx: 245, cy: 206, rx: 28, ry: 15 },
+      { cx: 155, cy: 242, rx: 22, ry: 10 },
+      { cx: 245, cy: 242, rx: 22, ry: 10 },
+    ],
+    drawingHint: "以Z字形从睫毛根部往上刷，上下睫毛都要刷到~",
+    coverageThreshold: 65,
     products: [
       { id: "mascara-1", name: "纤长款睫毛膏", icon: "📏", previewColor: "#2D1B0E" },
       { id: "mascara-2", name: "浓密款睫毛膏", icon: "💫", previewColor: "#2D1B0E" },
@@ -125,6 +187,13 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "笑起来在苹果肌上打腮红",
     tip: "腮红选对位置超减龄！圆形扫显可爱，斜向扫显瘦脸，记得不要低于鼻翼哦~",
     effectKey: "blush",
+    drawingTool: { type: "brush", icon: "🖌️", size: 30, name: "腮红刷" },
+    targetZones: [
+      { cx: 125, cy: 275, rx: 28, ry: 18 },
+      { cx: 275, cy: 275, rx: 28, ry: 18 },
+    ],
+    drawingHint: "笑起来，用腮红刷在苹果肌上以打圈方式晕染~",
+    coverageThreshold: 70,
     products: [
       { id: "blush-1", name: "樱花粉（可爱少女）", color: "#FFB6C1", color2: "#FF9AAF", previewColor: "#FFB6C1" },
       { id: "blush-2", name: "蜜桃橘（元气活力）", color: "#FFCBA4", color2: "#FFB380", previewColor: "#FFCBA4" },
@@ -138,6 +207,12 @@ export const MAKEUP_STEPS: MakeupStep[] = [
     description: "涂上喜欢的口红颜色",
     tip: "涂口红前先涂润唇膏打底！用唇线笔勾勒唇形更精致，咬唇妆显嫩、满涂显气场~",
     effectKey: "lipstick",
+    drawingTool: { type: "stick", icon: "💄", size: 18, name: "口红" },
+    targetZones: [
+      { cx: 200, cy: 330, rx: 40, ry: 22 },
+    ],
+    drawingHint: "先勾勒唇线，再填满唇部，打造精致唇妆~",
+    coverageThreshold: 75,
     products: [
       { id: "lipstick-1", name: "豆沙色（温柔日常）", color: "#D48A8A", color2: "#C47070", previewColor: "#D48A8A" },
       { id: "lipstick-2", name: "正红色（气场女王）", color: "#FF3B5C", color2: "#E85070", previewColor: "#FF3B5C" },

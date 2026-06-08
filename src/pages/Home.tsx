@@ -7,6 +7,7 @@ import TipModal from "@/components/TipModal";
 import SummaryCard from "@/components/SummaryCard";
 import Decorations from "@/components/Decorations";
 import ProductSelectionModal from "@/components/ProductSelectionModal";
+import MakeupDrawingCanvas from "@/components/MakeupDrawingCanvas";
 import { MAKEUP_STEPS } from "@/data/steps";
 import { CompletedEffect, MakeupStep, ProductOption, CharacterProfile, SkinToneOption, FaceShapeOption, SceneOption, OutfitStyleOption } from "@/types";
 
@@ -65,6 +66,9 @@ export default function Home() {
   const [showHint, setShowHint] = useState(false);
   const [showProductSelection, setShowProductSelection] = useState(false);
   const [pendingStep, setPendingStep] = useState<MakeupStep | null>(null);
+  const [showDrawing, setShowDrawing] = useState(false);
+  const [drawingStep, setDrawingStep] = useState<MakeupStep | null>(null);
+  const [drawingProduct, setDrawingProduct] = useState<ProductOption | null>(null);
 
   const shuffledSteps = useMemo<MakeupStep[]>(() => {
     return shuffleArray(MAKEUP_STEPS);
@@ -100,6 +104,10 @@ export default function Home() {
         if (step.products && step.products.length > 0) {
           setPendingStep(step);
           setShowProductSelection(true);
+        } else if (step.drawingTool && step.targetZones) {
+          setDrawingStep(step);
+          setDrawingProduct(null);
+          setShowDrawing(true);
         } else {
           finalizeStep(step);
         }
@@ -114,12 +122,34 @@ export default function Home() {
   const handleProductSelect = useCallback(
     (product: ProductOption) => {
       if (!pendingStep) return;
-      finalizeStep(pendingStep, product);
       setShowProductSelection(false);
-      setPendingStep(null);
+      if (pendingStep.drawingTool && pendingStep.targetZones) {
+        setDrawingStep(pendingStep);
+        setDrawingProduct(product);
+        setShowDrawing(true);
+      } else {
+        finalizeStep(pendingStep, product);
+        setPendingStep(null);
+      }
     },
     [pendingStep, finalizeStep]
   );
+
+  const handleDrawingComplete = useCallback(() => {
+    if (!drawingStep) return;
+    setShowDrawing(false);
+    finalizeStep(drawingStep, drawingProduct ?? undefined);
+    setDrawingStep(null);
+    setDrawingProduct(null);
+    setPendingStep(null);
+  }, [drawingStep, drawingProduct, finalizeStep]);
+
+  const handleDrawingCancel = useCallback(() => {
+    setShowDrawing(false);
+    setDrawingStep(null);
+    setDrawingProduct(null);
+    setPendingStep(null);
+  }, []);
 
   const handleCloseTip = useCallback(() => {
     setShowTip(false);
@@ -145,6 +175,9 @@ export default function Home() {
     setShowHint(false);
     setShowProductSelection(false);
     setPendingStep(null);
+    setShowDrawing(false);
+    setDrawingStep(null);
+    setDrawingProduct(null);
     setStarted(true);
   }, []);
 
@@ -180,11 +213,11 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-gray-600 text-lg mb-2">先定制你的专属角色，再开始学习正确的化妆顺序吧！</p>
+          <p className="text-gray-600 text-lg mb-2">先定制你的专属角色，再开始沉浸式化妆体验吧！</p>
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
             选择你的肤色、脸型、场景和服装，打造属于你的完美形象~
             <br />
-            之后从打乱的化妆步骤中，按正确顺序依次选择下一步，每一步都可以选你喜欢的产品色号哦！✨
+            之后从打乱的化妆步骤中，按正确顺序依次操作，每一步先选产品，然后用工具在脸上"画"出妆容哦！✨
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -193,16 +226,16 @@ export default function Home() {
               <span className="text-sm text-gray-600">定制专属形象</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
-              <span className="text-lg">🎯</span>
-              <span className="text-sm text-gray-600">按正确顺序选择</span>
+              <span className="text-lg">�</span>
+              <span className="text-sm text-gray-600">挑选喜爱的产品</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
+              <span className="text-lg">�️</span>
+              <span className="text-sm text-gray-600">拖拽绘画上妆</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">💡</span>
               <span className="text-sm text-gray-600">3次提示机会</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
-              <span className="text-lg">🎨</span>
-              <span className="text-sm text-gray-600">挑选喜爱的产品</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 shadow-sm border border-pink-100">
               <span className="text-lg">📚</span>
@@ -227,8 +260,9 @@ export default function Home() {
               <p className="text-sm font-bold text-gray-700 mb-1">游戏玩法</p>
               <p className="text-xs text-gray-500 leading-relaxed">
                 首先定制你的专属形象，然后右侧列表中所有化妆步骤已被打乱，请根据你的化妆知识，
-                从「洁面护肤」开始，按正确的化妆顺序依次点击每一步。
-                每选对一步就可以挑选一款你喜欢的产品色号~选错了会有震动提醒，实在不知道可以使用提示功能！
+                从「洁面护肤」开始，按正确的化妆顺序依次选择每一步。
+                选对后先挑选你喜欢的产品色号，然后拿起化妆工具在人物脸上的高亮区域"画"出妆容，
+                完成度达标才算过关哦！选错了会有震动提醒，实在不知道可以使用提示功能~
               </p>
             </div>
           </div>
@@ -290,7 +324,7 @@ export default function Home() {
             </div>
           )}
           <p className="text-sm text-gray-500">
-            从打乱的步骤中，找出正确的化妆顺序，每一步都可以挑选你喜欢的产品哦~
+            从打乱的步骤中，找出正确的化妆顺序，选品后用工具在脸上"画"出妆容~
             {currentExpectedStep && !showHint && (
               <span className="ml-2 text-pink-400 font-medium">
                 （提示：下一步应该是第 {expectedStepId} 步）
@@ -322,7 +356,7 @@ export default function Home() {
 
           <div className="mt-4 text-center">
             <p className="text-xs text-gray-400">
-              🎮 从列表中选择下一步正确的化妆步骤吧！
+              🎮 选择正确的步骤 → 挑选产品 → 拿起工具在脸上"画"出妆容吧！
             </p>
           </div>
         </div>
@@ -333,6 +367,17 @@ export default function Home() {
       <ProductSelectionModal
         step={pendingStep}
         onSelect={handleProductSelect}
+      />
+    )}
+
+    {showDrawing && drawingStep && (
+      <MakeupDrawingCanvas
+        step={drawingStep}
+        selectedProduct={drawingProduct}
+        effects={completedEffects}
+        characterProfile={characterProfile ?? undefined}
+        onComplete={handleDrawingComplete}
+        onCancel={handleDrawingCancel}
       />
     )}
 
